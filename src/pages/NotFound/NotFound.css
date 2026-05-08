@@ -1,0 +1,50 @@
+#center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+h1 {
+  font-size: 6rem;
+  margin-bottom: 0;
+  color: #646cff;
+}
+
+p {
+  color: #888;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.back-home {
+  color: #646cff;
+  text-decoration: none;
+  font-weight: 500;
+  border: 1px solid #646cff;
+  padding: 0.6em 1.2em;
+  border-radius: 8px;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+.back-home:hover {
+  background-color: #646cff;
+  color: #fff;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] p {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .back-home {
+  color: #818cf8;
+  border-color: #818cf8;
+}
+
+[data-theme="dark"] .back-home:hover {
+  background-color: #818cf8;
+  color: #0f0f1a;
+}

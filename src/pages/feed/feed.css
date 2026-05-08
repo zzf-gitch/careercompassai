@@ -1,0 +1,478 @@
+/* ============================
+   Community Page Layout
+   ============================ */
+.community-page {
+  display: flex;
+  gap: 24px;
+  padding: 28px 32px;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ============================
+   Feed Column (Left + Center)
+   ============================ */
+.feed-column {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Header ── */
+.feed-header {
+  margin-bottom: 20px;
+}
+
+.feed-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+
+.feed-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Post Box ── */
+.post-box {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.post-box-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.post-input {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #1f2937;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.post-input::placeholder {
+  color: #9ca3af;
+}
+
+.post-input:focus {
+  border-color: #7c5cfc;
+}
+
+.post-box-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.post-cancel-btn {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  border-radius: 20px;
+  padding: 7px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.post-cancel-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+.post-submit-btn {
+  background: #7c5cfc;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.post-submit-btn:hover:not(:disabled) {
+  background: #6a4ae8;
+}
+
+.post-submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ============================
+   Post Cards
+   ============================ */
+.feed-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.post-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.post-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.post-card-author {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.post-card-role {
+  font-size: 12px;
+  color: #7c5cfc;
+}
+
+.post-card-time {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ── Delete button ── */
+.post-delete-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  opacity: 0;
+}
+
+.post-card:hover .post-delete-btn {
+  opacity: 1;
+}
+
+.post-delete-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.post-card-body {
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.5;
+  padding: 2px 0;
+  word-break: break-word;
+}
+
+/* ── Stats bar ── */
+.post-card-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 2px 0 4px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* ── Action buttons ── */
+.post-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.post-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.post-action-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.post-action-btn.liked {
+  color: #7c5cfc;
+}
+
+/* ============================
+   Right Sidebar
+   ============================ */
+.right-sidebar {
+  width: 240px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── User Card ── */
+.user-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.user-card-banner {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(135deg, #7c5cfc, #a78bfa);
+}
+
+.user-card-avatar {
+  margin-top: -30px;
+  margin-bottom: 8px;
+}
+
+.user-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.user-card-role {
+  font-size: 13px;
+  color: #7c5cfc;
+  margin: 2px 0;
+}
+
+.user-card-stats {
+  display: flex;
+  gap: 24px;
+  margin: 12px 0;
+}
+
+.user-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.user-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.user-stat-label {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.user-card-btn {
+  background: transparent;
+  border: 1px solid #7c5cfc;
+  color: #7c5cfc;
+  border-radius: 20px;
+  padding: 6px 24px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.user-card-btn:hover {
+  background: #7c5cfc;
+  color: #fff;
+}
+
+/* ── Trending Card ── */
+.trending-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.trending-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 12px;
+}
+
+.trending-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.trending-item:last-child {
+  border-bottom: none;
+}
+
+.trending-tag {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.trending-count {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ============================
+   Dark Theme Overrides
+   ============================ */
+[data-theme="dark"] .feed-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .feed-subtitle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .post-box,
+[data-theme="dark"] .post-card,
+[data-theme="dark"] .user-card,
+[data-theme="dark"] .trending-card {
+  background: #1e1e2f;
+  border-color: #2d2d44;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .post-input {
+  background: #16162a;
+  border-color: #2d2d44;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .post-input::placeholder {
+  color: #64748b;
+}
+
+[data-theme="dark"] .post-box-actions {
+  border-top-color: #2d2d44;
+}
+
+[data-theme="dark"] .post-card-author,
+[data-theme="dark"] .user-card-name,
+[data-theme="dark"] .user-stat-value,
+[data-theme="dark"] .trending-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .post-card-body,
+[data-theme="dark"] .trending-tag {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .post-card-time,
+[data-theme="dark"] .post-card-stats,
+[data-theme="dark"] .user-stat-label,
+[data-theme="dark"] .trending-count {
+  color: #64748b;
+}
+
+[data-theme="dark"] .post-action-btn {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .post-action-btn:hover {
+  background: #2d2d44;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .post-cancel-btn {
+  border-color: #475569;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .post-cancel-btn:hover {
+  background: #2d2d44;
+  color: #f1f5f9;
+  border-color: #64748b;
+}
+
+[data-theme="dark"] .post-card-stats {
+  border-bottom-color: #2d2d44;
+}
+
+[data-theme="dark"] .trending-item {
+  border-bottom-color: #2d2d44;
+}
+
+[data-theme="dark"] .post-delete-btn {
+  color: #64748b;
+}
+
+[data-theme="dark"] .post-delete-btn:hover {
+  background: #3b1f1f;
+  color: #f87171;
+}
+
+/* ============================
+   Responsive
+   ============================ */
+@media (max-width: 900px) {
+  .community-page {
+    flex-direction: column;
+    padding: 20px 16px;
+  }
+
+  .right-sidebar {
+    width: 100%;
+    min-width: 0;
+  }
+}
