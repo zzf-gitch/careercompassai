@@ -11,6 +11,15 @@
   --card-shadow: rgba(0, 0, 0, 0.08);
   --muted-text: #6b7280;
 
+  /* ── Semantic tokens (used by Profile, feed, etc.) ── */
+  --foreground: #1f2937;
+  --background: #ffffff;
+  --muted-foreground: #6b7280;
+  --border-60: #e5e7eb;
+  --primary: #7c5cfc;
+  --primary-foreground: #ffffff;
+  --ring: rgba(124, 92, 252, 0.25);
+
   /* ── Dropdown (light) ── */
   --dropdown-bg: #ffffff;
   --dropdown-text: #1f2937;
@@ -32,6 +41,15 @@
   --card-bg: #1e1e2f;
   --card-shadow: rgba(0, 0, 0, 0.35);
   --muted-text: #94a3b8;
+
+  /* ── Semantic tokens (dark) ── */
+  --foreground: #f1f5f9;
+  --background: #1e1e2f;
+  --muted-foreground: #94a3b8;
+  --border-60: #2d2d44;
+  --primary: #7c5cfc;
+  --primary-foreground: #ffffff;
+  --ring: rgba(124, 92, 252, 0.35);
 
   /* ── Dropdown (dark) ── */
   --dropdown-bg: #1e1e2f;

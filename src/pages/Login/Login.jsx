@@ -1,12 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { logActivity } from '../../utils/db'
 import './Login.css'
+
+const STORAGE_KEY = 'login_remember_credentials'
 
 function Login() {
   const navigate = useNavigate()
+
+  // 如果已经登录，直接跳转到仪表盘
+  useEffect(() => {
+    const email = localStorage.getItem('userEmail')
+    if (email) {
+      navigate('/Dashboard', { replace: true })
+    }
+  }, [navigate])
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(false)
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const sceneRef = useRef(null)
   const pupilsRef = useRef([])
   const dotEyesRef = useRef([])
@@ -25,6 +37,27 @@ function Login() {
     }, 1500)
   }, [])
 
+  // 页面加载时从 localStorage 恢复已保存的凭据
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.email) setEmail(parsed.email)
+        if (parsed.password) setPassword(parsed.password)
+        if (parsed.remember) setRemember(true)
+      }
+    } catch {
+      // ignore parse error
+    }
+  }, [])
+
+  // 页面加载时读取并应用主题偏好
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [])
+
   useEffect(() => {
     return () => {
       if (submitTimerRef.current) clearTimeout(submitTimerRef.current)
@@ -34,7 +67,22 @@ function Login() {
   const handleLogin = (e) => {
     e.preventDefault()
     triggerExcited()
+
+    // 保存当前登录邮箱供 App / feed 等页面使用
     localStorage.setItem('userEmail', email)
+
+    if (remember) {
+      // 保存邮箱和密码到 localStorage（用于下次自动填充）
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ email, password, remember: true })
+      )
+    } else {
+      // 取消记住则清除已保存的凭据
+      localStorage.removeItem(STORAGE_KEY)
+    }
+
+    logActivity('登录系统', `用户 ${email.split('@')[0]} 登录了职业罗盘`)
     setTimeout(() => navigate('/Dashboard'), 700)
   }
 
@@ -375,6 +423,8 @@ function Login() {
                   id="password"
                   placeholder="????????"
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => handleFocus('password')}
                   onBlur={handleBlur}
                 />
@@ -411,7 +461,7 @@ function Login() {
                   onClick={() => setRemember(!remember)}
                   id="remember"
                 />
-                <label className="login-checkbox-label" htmlFor="remember">记住我 30 天</label>
+                <label className="login-checkbox-label" htmlFor="remember">记住邮箱密码</label>
               </div>
               <a href="#" className="login-forgot">忘记密码?</a>
             </div>

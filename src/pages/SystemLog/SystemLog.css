@@ -1,0 +1,151 @@
+/* ════════════════════════════════════════
+   System Log Page
+   ════════════════════════════════════════ */
+
+.syslog-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 2.5rem;
+}
+
+.syslog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.syslog-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--foreground, var(--text-body));
+  margin: 0 0 0.25rem;
+}
+
+.syslog-subtitle {
+  font-size: 0.85rem;
+  color: var(--muted-foreground, var(--muted-text));
+  margin: 0;
+}
+
+/* ── Timeline List ── */
+.syslog-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.syslog-item {
+  display: flex;
+  gap: 0.85rem;
+}
+
+/* ── Timeline ── */
+.syslog-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 14px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+.syslog-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary, #7c5cfc);
+  flex-shrink: 0;
+}
+
+.syslog-line {
+  width: 2px;
+  flex: 1;
+  background: var(--border-60, var(--border-color));
+  min-height: 20px;
+}
+
+/* ── Card ── */
+.syslog-card {
+  display: flex;
+  gap: 0.85rem;
+  background: var(--card-bg, var(--background));
+  border: 1px solid var(--border-60, var(--border-color));
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.5rem;
+  flex: 1;
+  transition: box-shadow 0.2s;
+}
+
+.syslog-card:hover {
+  box-shadow: 0 2px 10px var(--card-shadow, rgba(0, 0, 0, 0.05));
+}
+
+.syslog-card-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.syslog-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.syslog-action {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground, var(--text-body));
+  margin-bottom: 3px;
+}
+
+.syslog-detail {
+  font-size: 0.8rem;
+  color: var(--muted-foreground, var(--muted-text));
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.syslog-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.7rem;
+  color: var(--muted-foreground, var(--muted-text));
+  opacity: 0.7;
+}
+
+.syslog-user,
+.syslog-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ── Empty ── */
+.syslog-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--muted-foreground);
+}
+
+.syslog-empty-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.syslog-empty p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ── Loading ── */
+.syslog-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}

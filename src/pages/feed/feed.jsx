@@ -1,6 +1,57 @@
-import { useState } from 'react'
-import { getAvatarColor } from '../../utils/avatar.js'
+import { useState, useEffect, useMemo } from 'react'
 import './feed.css'
+
+/* ── Read user profile from localStorage ── */
+function readCurrentUser() {
+  const email = localStorage.getItem('userEmail') || 'user@example.com'
+  const defaultName = email.split('@')[0]
+  try {
+    const raw = localStorage.getItem('user_profile')
+    if (raw) {
+      const p = JSON.parse(raw)
+      return {
+        name: p.displayName || defaultName,
+        role: 'Job Seeker',
+        avatar: null,
+        avatarColor: p.avatarColor || '#7c5cfc',
+      }
+    }
+  } catch {}
+  return { name: defaultName, role: 'Job Seeker', avatar: null, avatarColor: '#7c5cfc' }
+}
+
+/* ── Available avatar colors ── */
+const AVATAR_COLORS = ['#7c5cfc', '#f59e0b', '#3b82f6', '#ec4899', '#10b981', '#f97316']
+
+function getAvatarColor(name) {
+  // 只有当前登录用户才使用保存的颜色，其他人用名字 hash 确定颜色
+  const email = localStorage.getItem('userEmail') || ''
+  const defaultName = email.split('@')[0]
+  const isCurrentUser =
+    name === defaultName ||
+    (() => {
+      try {
+        const p = JSON.parse(localStorage.getItem('user_profile') || '{}')
+        return name === p.displayName
+      } catch {
+        return false
+      }
+    })()
+
+  if (isCurrentUser) {
+    try {
+      const p = JSON.parse(localStorage.getItem('user_profile') || '{}')
+      if (p.avatarColor) return p.avatarColor
+    } catch {}
+  }
+
+  // 基于名字 hash 的确定性颜色
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
 
 /* ── Mock Data ── */
 const initialPosts = [
@@ -44,6 +95,7 @@ const initialPosts = [
 
 function Avatar({ name, size = 40 }) {
   const initials = name.slice(0, 1).toUpperCase()
+  const color = getAvatarColor(name)
   return (
     <div
       className="avatar"
@@ -51,7 +103,7 @@ function Avatar({ name, size = 40 }) {
         width: size,
         height: size,
         borderRadius: '50%',
-        background: getAvatarColor(name),
+        background: color,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -71,13 +123,18 @@ function Feed() {
   const [posts, setPosts] = useState(initialPosts)
   const [postText, setPostText] = useState('')
   const [showActions, setShowActions] = useState(false)
+  const [tick, setTick] = useState(0)
+
+  // 监听 profile-updated 自定义事件，保存后立即刷新当前用户信息
+  useEffect(() => {
+    const handler = () => setTick((n) => n + 1)
+    window.addEventListener('profile-updated', handler)
+    return () => window.removeEventListener('profile-updated', handler)
+  }, [])
 
   /* ── Current User (read on every render to stay in sync with login changes) ── */
-  const currentUser = (() => {
-    const email = localStorage.getItem('userEmail') || 'user@example.com'
-    const name = email.split('@')[0]
-    return { name, role: 'Job Seeker', avatar: null }
-  })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const currentUser = useMemo(() => readCurrentUser(), [tick])
 
   /* ── Like togggle ── */
   const toggleLike = (id) => {

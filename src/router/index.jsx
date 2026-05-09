@@ -2,15 +2,13 @@ import { createBrowserRouter } from 'react-router-dom'
 import RouteGuard from './RouteGuard.jsx'
 import App from '../App.jsx'
 import Feed from '../pages/feed/feed.jsx'
-import Search from '../pages/Search/Search.jsx'
 import Dashboard from '../pages/Dashboard/Dashboard.jsx'
 import Opportunities from '../pages/Opportunities/Opportunities.jsx'
 import Applications from '../pages/Applications/Applications.jsx'
-import LaunchPad from '../pages/LaunchPad/LaunchPad.jsx'
 import Saved from '../pages/Saved/Saved.jsx'
 import Profile from '../pages/Profile/Profile.jsx'
 import Inbox from '../pages/Inbox/Inbox.jsx'
-import Insights from '../pages/Insights/Insights.jsx'
+import SystemLog from '../pages/SystemLog/SystemLog.jsx'
 import Login from '../pages/Login/Login.jsx'
 import NotFound from '../pages/NotFound/NotFound.jsx'
 
@@ -40,11 +38,6 @@ const router = createBrowserRouter([
             handle: { title: '社区动态' },
           },
           {
-            path: 'search',
-            element: <Search />,
-            handle: { title: '搜索' },
-          },
-          {
             path: 'opportunities',
             element: <Opportunities />,
             handle: { title: '机会' },
@@ -53,11 +46,6 @@ const router = createBrowserRouter([
             path: 'applications',
             element: <Applications />,
             handle: { title: '我的申请' },
-          },
-          {
-            path: 'launchpad',
-            element: <LaunchPad />,
-            handle: { title: '启动台' },
           },
           {
             path: 'saved',
@@ -75,9 +63,9 @@ const router = createBrowserRouter([
             handle: { title: '收件箱' },
           },
           {
-            path: 'insights',
-            element: <Insights />,
-            handle: { title: '洞察' },
+            path: 'systemlog',
+            element: <SystemLog />,
+            handle: { title: '系统记录' },
           },
           {
             path: '*',

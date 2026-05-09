@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, useMatches } from 'react-router-dom'
 import { setDocumentTitle } from '../hooks/useDocumentTitle'
+import { seedIfEmpty } from '../utils/db'
 
 /**
  * 路由守卫组件
@@ -21,6 +22,11 @@ export default function RouteGuard() {
     const title = match?.handle?.title || ''
     setDocumentTitle(title)
   }, [matches])
+
+  // 应用启动时初始化 IndexedDB 示例数据（仅首次运行）
+  useEffect(() => {
+    seedIfEmpty()
+  }, [])
 
   return <Outlet />
 }
