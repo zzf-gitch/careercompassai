@@ -48,3 +48,35 @@ p {
   background-color: #818cf8;
   color: #0f0f1a;
 }
+
+/* ════════ Responsive ════════ */
+@media (max-width: 768px) {
+  #center {
+    min-height: 50vh;
+    padding: 0 1rem;
+  }
+
+  #center h1 {
+    font-size: 4rem;
+  }
+
+  #center p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #center h1 {
+    font-size: 3rem;
+  }
+
+  #center p {
+    font-size: 0.88rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .back-home {
+    font-size: 0.85rem;
+    padding: 0.5em 1em;
+  }
+}

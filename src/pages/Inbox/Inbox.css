@@ -219,3 +219,60 @@
   color: var(--muted-foreground);
   font-size: 0.9rem;
 }
+
+/* ════════ Responsive ════════ */
+@media (max-width: 768px) {
+  .inbox-page {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .inbox-tabs {
+    gap: 0.35rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .inbox-tab {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .inbox-card {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .inbox-card-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+
+  .inbox-card-from {
+    font-size: 0.8rem;
+  }
+
+  .inbox-card-content {
+    font-size: 0.75rem;
+  }
+
+  .inbox-card-time {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .inbox-title {
+    font-size: 1.1rem;
+  }
+
+  .inbox-card {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .inbox-card-left {
+    gap: 0.65rem;
+  }
+}

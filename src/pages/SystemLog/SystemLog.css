@@ -149,3 +149,41 @@
   color: var(--muted-foreground);
   font-size: 0.9rem;
 }
+
+/* ════════ Responsive ════════ */
+@media (max-width: 768px) {
+  .syslog-page {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .syslog-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .syslog-card {
+    padding: 0.75rem 0.85rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .syslog-action {
+    font-size: 0.8rem;
+  }
+
+  .syslog-detail {
+    font-size: 0.75rem;
+  }
+
+  .syslog-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .syslog-title {
+    font-size: 1.1rem;
+  }
+}

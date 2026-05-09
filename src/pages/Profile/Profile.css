@@ -290,3 +290,66 @@
   from { opacity: 1; }
   to   { opacity: 0; transform: translateX(-50%) translateY(1rem); }
 }
+
+/* ════════ Responsive ════════ */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .profile-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .profile-identity-card {
+    padding: 1rem;
+  }
+
+  .profile-identity-left {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .profile-color-picker {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .profile-section {
+    padding: 1rem;
+  }
+
+  .profile-section-header {
+    font-size: 0.85rem;
+  }
+
+  .profile-avatar-wrap {
+    width: 64px;
+    height: 64px;
+  }
+
+  .profile-avatar-img {
+    font-size: 1.5rem;
+  }
+
+  .profile-identity-info h2 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header h1 {
+    font-size: 1.1rem;
+  }
+}

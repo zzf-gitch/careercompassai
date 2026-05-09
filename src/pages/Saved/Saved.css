@@ -189,3 +189,53 @@
   color: var(--muted-foreground);
   font-size: 0.9rem;
 }
+
+/* ════════ Responsive ════════ */
+@media (max-width: 768px) {
+  .saved-page {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .saved-tabs {
+    gap: 0.35rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .saved-tab {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .saved-card {
+    padding: 0.85rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .saved-card-logo {
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+
+  .saved-card-title {
+    font-size: 0.82rem;
+  }
+
+  .saved-card-company {
+    font-size: 0.75rem;
+  }
+
+  .saved-card-reason {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .saved-title {
+    font-size: 1.1rem;
+  }
+}

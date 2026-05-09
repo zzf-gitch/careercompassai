@@ -72,8 +72,10 @@ function App() {
   const [notifMessages, setNotifMessages] = useState([])
   const cardRef = useRef(null)
   const notifRef = useRef(null)
+  const sidebarRef = useRef(null)
   const [tick, setTick] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // 每次渲染重新读取 localStorage，确保与 Profile 页修改实时同步
   const profile = readUserProfile()
@@ -148,6 +150,9 @@ function App() {
     if (notifRef.current && !notifRef.current.contains(e.target)) {
       setNotifOpen(false)
     }
+    if (sidebarRef.current && !sidebarRef.current.contains(e.target) && !e.target.closest('.mobile-menu-btn')) {
+      setSidebarOpen(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -160,10 +165,34 @@ function App() {
     setTick((n) => n + 1)
   }, [location])
 
+  // 导航后关闭移动端侧栏
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location])
+
   return (
     <div className="app-layout">
+      {/* 移动端菜单按钮 */}
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setSidebarOpen((prev) => !prev)}
+        aria-label="切换菜单"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      {/* 移动端遮罩层 */}
+      <div
+        className={`sidebar-overlay${sidebarOpen ? ' open' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       {/* ===== Left Sidebar ===== */}
-      <aside className="sidebar">
+      <aside className={`sidebar${sidebarOpen ? ' mobile-open' : ''}`} ref={sidebarRef}>
         {/* Logo / Brand */}
         <div className="sidebar-brand">
           <img

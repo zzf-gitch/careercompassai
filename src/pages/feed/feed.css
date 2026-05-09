@@ -476,3 +476,88 @@
     min-width: 0;
   }
 }
+
+@media (max-width: 768px) {
+  .community-page {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+
+  .feed-title {
+    font-size: 1.25rem;
+  }
+
+  .feed-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .post-card {
+    padding: 14px 16px;
+  }
+
+  .post-card-body {
+    font-size: 0.88rem;
+  }
+
+  .post-action-btn {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .post-action-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .post-card-stats {
+    font-size: 0.7rem;
+    gap: 10px;
+  }
+
+  .post-delete-btn {
+    opacity: 1;
+  }
+
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .community-page {
+    padding: 12px 8px;
+  }
+
+  .feed-title {
+    font-size: 1.1rem;
+  }
+
+  .post-box {
+    padding: 12px 14px;
+  }
+
+  .post-input {
+    font-size: 0.82rem;
+    padding: 8px 14px;
+  }
+
+  .post-card {
+    padding: 12px 14px;
+  }
+
+  .post-card-header {
+    gap: 10px;
+  }
+
+  .post-card-author {
+    font-size: 0.82rem;
+  }
+
+  .post-card-role {
+    font-size: 0.7rem;
+  }
+
+  .post-card-time {
+    font-size: 0.65rem;
+  }
+}

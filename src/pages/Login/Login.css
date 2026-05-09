@@ -537,3 +537,74 @@
 .login-signup a:hover {
   text-decoration: underline;
 }
+
+/* ════════ Mobile Refinements ════════ */
+@media (max-width: 768px) {
+  .login-right {
+    padding: 1.5rem 1rem;
+  }
+
+  .login-form-wrapper {
+    max-width: 100%;
+  }
+
+  .login-heading h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-heading {
+    margin-bottom: 2rem;
+  }
+
+  .login-field input[type="email"],
+  .login-field input[type="text"],
+  .login-field input[type="password"] {
+    height: 2.75rem;
+    font-size: 0.95rem;
+  }
+
+  .login-submit,
+  .login-google {
+    height: 2.75rem;
+    font-size: 0.95rem;
+  }
+
+  .login-mobile-logo {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    max-height: none;
+    min-height: 100dvh;
+  }
+
+  .login-right {
+    padding: 1.25rem 0.85rem;
+  }
+
+  .login-heading h1 {
+    font-size: 1.3rem;
+  }
+
+  .login-heading p {
+    font-size: 0.8rem;
+  }
+
+  .login-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .login-mobile-logo {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .login-signup {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+  }
+}

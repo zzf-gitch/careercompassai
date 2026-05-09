@@ -10,6 +10,47 @@
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+/* ========== Mobile Menu Button ========== */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 200;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary, #7c5cfc);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(124, 92, 252, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.92);
+}
+
+/* ========== Sidebar Overlay (mobile) ========== */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* ========== Sidebar ========== */
 .sidebar {
   width: 62px;
@@ -526,4 +567,156 @@
 
 .notif-view-all:hover {
   opacity: 0.8;
+}
+
+/* ============================================================
+   Mobile Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+  /* 显示移动端菜单按钮 */
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* 显示遮罩层 */
+  .sidebar-overlay {
+    display: block;
+  }
+
+  /* 侧栏改为浮动式抽屉 */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    height: 100vh;
+    width: 0;
+    min-width: 0;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease, width 0.25s ease, min-width 0.25s ease;
+    overflow-y: auto;
+  }
+
+  .sidebar.mobile-open {
+    width: 260px;
+    min-width: 260px;
+    transform: translateX(0);
+  }
+
+  .sidebar:hover {
+    width: 260px;
+    min-width: 260px;
+  }
+
+  .sidebar:hover .sidebar-brand span {
+    opacity: 1;
+  }
+
+  .sidebar:hover .sidebar-label {
+    opacity: 1;
+  }
+
+  .sidebar-brand span {
+    opacity: 1;
+  }
+
+  .sidebar-label {
+    opacity: 1;
+  }
+
+  /* 顶栏 */
+  .topbar {
+    padding: 10px 12px;
+  }
+
+  .topbar-user-trigger {
+    padding: 4px;
+    gap: 0;
+  }
+
+  /* 用户下拉菜单移动端适配 */
+  .topbar-user-dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px 16px;
+    transform: translateY(100%);
+    z-index: 300;
+  }
+
+  .topbar-user-dropdown.open {
+    transform: translateY(0);
+  }
+
+  /* 通知下拉菜单移动端适配 */
+  .notif-dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    z-index: 300;
+  }
+
+  .notif-dropdown.open {
+    transform: translateY(0);
+  }
+
+  .notif-dropdown-body {
+    max-height: none;
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 8px 10px;
+  }
+
+  .topbar-actions {
+    gap: 6px;
+  }
+
+  .theme-toggle-btn,
+  .notif-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .theme-toggle-btn svg,
+  .notif-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .topbar-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .topbar-icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .topbar-user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .topbar-user-trigger {
+    padding: 3px;
+  }
 }
