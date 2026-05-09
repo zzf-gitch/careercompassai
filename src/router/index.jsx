@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createHashRouter , createBrowserRouter } from 'react-router-dom'
 import RouteGuard from './RouteGuard.jsx'
 import App from '../App.jsx'
 import Feed from '../pages/feed/feed.jsx'
@@ -12,7 +12,7 @@ import SystemLog from '../pages/SystemLog/SystemLog.jsx'
 import Login from '../pages/Login/Login.jsx'
 import NotFound from '../pages/NotFound/NotFound.jsx'
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   // 路由守卫 — 每次跳转自动设置浏览器标题
   {
     element: <RouteGuard />,

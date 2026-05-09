@@ -227,7 +227,7 @@ export async function getDashboardStats() {
 /* ── 获取当前登录用户的身份（求职者 / Boss） ── */
 export function getUserRole() {
   try {
-    const raw = localStorage.getItem('user_profile')
+    const raw = localStorage.getItem('user_settings')
     if (raw) {
       const p = JSON.parse(raw)
       if (p.role) return p.role
@@ -251,9 +251,21 @@ export async function addSystemMessage(from, content) {
   window.dispatchEvent(new CustomEvent('profile-updated'))
 }
 
+/* ── 获取当前登录邮箱（从独立的 user_session 中读取） ── */
+export function getCurrentEmail() {
+  try {
+    const raw = localStorage.getItem('user_session')
+    if (raw) {
+      const p = JSON.parse(raw)
+      if (p.email) return p.email
+    }
+  } catch {}
+  return ''
+}
+
 /* ── 记录系统操作日志 ── */
 export async function logActivity(action, detail) {
-  const email = localStorage.getItem('userEmail') || 'unknown'
+  const email = getCurrentEmail() || 'unknown'
   const user = email.split('@')[0]
   const now = Date.now()
   const entry = {

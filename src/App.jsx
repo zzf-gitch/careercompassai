@@ -14,42 +14,47 @@ const navItems = [
   // 收件箱入口已移至右上角通知铃铛
 ]
 
-/* ── Read user profile from localStorage ── */
-function readUserProfile() {
-  const email = localStorage.getItem('userEmail') || 'user@example.com'
-  const defaultName = email.split('@')[0]
+/* ── 获取当前登录邮箱（从独立的 user_session key 读取） ── */
+function getCurrentEmail() {
   try {
-    const raw = localStorage.getItem('user_profile')
+    const raw = localStorage.getItem('user_session')
+    if (raw) {
+      const p = JSON.parse(raw)
+      if (p.email) return p.email
+    }
+  } catch {}
+  return ''
+}
+
+/* ── Read user settings from localStorage（个人偏好，不包含密码） ── */
+function readUserSettings() {
+  try {
+    const raw = localStorage.getItem('user_settings')
     if (raw) {
       const p = JSON.parse(raw)
       return {
-        email: p.email || email,
-        displayName: p.displayName || defaultName,
+        displayName: p.displayName || '',
         avatarColor: p.avatarColor || '#7c5cfc',
+        gender: p.gender || '',
+        role: p.role || 'seeker',
       }
     }
   } catch {}
-  return { email, displayName: defaultName, avatarColor: '#7c5cfc' }
+  return { displayName: '', avatarColor: '#7c5cfc', gender: '', role: 'seeker' }
 }
 
-/* ── Available avatar colors ── */
-const AVATAR_COLORS = ['#7c5cfc', '#f59e0b', '#3b82f6', '#ec4899', '#10b981', '#f97316']
-
-/* ── Deterministic color from name ── */
-function getAvatarColor(name) {
-  const used = localStorage.getItem('user_profile')
-  if (used) {
-    try {
-      const p = JSON.parse(used)
-      if (p.avatarColor) return p.avatarColor
-    } catch {}
+/* ── Read user profile for App header (email from session + settings) ── */
+function readUserProfile() {
+  const email = getCurrentEmail() || 'user@example.com'
+  const defaultName = email.split('@')[0]
+  const settings = readUserSettings()
+  return {
+    email,
+    displayName: settings.displayName || defaultName,
+    avatarColor: settings.avatarColor,
   }
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
+
 
 function App() {
   const navigate = useNavigate()
@@ -57,7 +62,7 @@ function App() {
 
   // 如果未登录，重定向到登录页
   useEffect(() => {
-    const email = localStorage.getItem('userEmail')
+    const email = getCurrentEmail()
     if (!email) {
       navigate('/', { replace: true })
     }
@@ -112,9 +117,8 @@ function App() {
   }, [theme])
 
   const handleSignOut = () => {
-    // 清除所有用户相关数据
-    localStorage.removeItem('userEmail')
-    localStorage.removeItem('user_profile')
+    // 只清除登录会话（user_settings 个人偏好保留不变）
+    localStorage.removeItem('user_session')
     navigate('/', { replace: true })
   }
 

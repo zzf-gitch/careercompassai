@@ -1,12 +1,24 @@
 import { useState, useEffect, useMemo } from 'react'
 import './feed.css'
 
-/* ── Read user profile from localStorage ── */
+/* ── 从 user_session 获取登录邮箱 ── */
+function getSessionEmail() {
+  try {
+    const raw = localStorage.getItem('user_session')
+    if (raw) {
+      const p = JSON.parse(raw)
+      if (p.email) return p.email
+    }
+  } catch {}
+  return ''
+}
+
+/* ── Read user settings from localStorage ── */
 function readCurrentUser() {
-  const email = localStorage.getItem('userEmail') || 'user@example.com'
+  const email = getSessionEmail() || 'user@example.com'
   const defaultName = email.split('@')[0]
   try {
-    const raw = localStorage.getItem('user_profile')
+    const raw = localStorage.getItem('user_settings')
     if (raw) {
       const p = JSON.parse(raw)
       return {
@@ -25,13 +37,13 @@ const AVATAR_COLORS = ['#7c5cfc', '#f59e0b', '#3b82f6', '#ec4899', '#10b981', '#
 
 function getAvatarColor(name) {
   // 只有当前登录用户才使用保存的颜色，其他人用名字 hash 确定颜色
-  const email = localStorage.getItem('userEmail') || ''
+  const email = getSessionEmail() || ''
   const defaultName = email.split('@')[0]
   const isCurrentUser =
     name === defaultName ||
     (() => {
       try {
-        const p = JSON.parse(localStorage.getItem('user_profile') || '{}')
+        const p = JSON.parse(localStorage.getItem('user_settings') || '{}')
         return name === p.displayName
       } catch {
         return false
@@ -40,7 +52,7 @@ function getAvatarColor(name) {
 
   if (isCurrentUser) {
     try {
-      const p = JSON.parse(localStorage.getItem('user_profile') || '{}')
+      const p = JSON.parse(localStorage.getItem('user_settings') || '{}')
       if (p.avatarColor) return p.avatarColor
     } catch {}
   }

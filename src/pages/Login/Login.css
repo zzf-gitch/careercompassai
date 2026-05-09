@@ -1,8 +1,9 @@
 /* ============================================================
-   Login Page — Character Animation System
+   Login Page — 完整移植自 careercompass-main 的视觉设计
+   (角色动画由 AnimatedCharacters.jsx 处理)
    ============================================================ */
 
-/* ---------- Override global #root constraints on login page ---------- */
+/* ---------- 覆盖全局 #root 约束 ---------- */
 #root:has(.login-page) {
   width: 100%;
   max-width: 100%;
@@ -11,7 +12,7 @@
   border-inline: none;
 }
 
-/* ---------- CSS Custom Properties ---------- */
+/* ---------- CSS 自定义属性 ---------- */
 :root {
   --background: #ffffff;
   --foreground: #0a0a0a;
@@ -24,6 +25,9 @@
   --ring: rgba(99, 102, 241, 0.3);
   --radius: 0.5rem;
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --input: #e5e5e5;
 }
 
 .dark,
@@ -36,6 +40,10 @@
   --border-60: rgba(255, 255, 255, 0.10);
   --primary: #818cf8;
   --primary-foreground: #0a0a0a;
+  --ring: rgba(129, 140, 248, 0.3);
+  --destructive: #f87171;
+  --destructive-foreground: #0a0a0a;
+  --input: #404040;
 }
 
 /* ---------- Reset ---------- */
@@ -79,6 +87,12 @@
   color: #ffffff;
 }
 
+/* 暗色模式下左面板使用更浅的渐变 (careercompass-main: dark:from-white/90 dark:via-white/80 dark:to-white/70) */
+[data-theme="dark"] .login-left {
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8), rgba(255,255,255,0.7));
+  color: #111827;
+}
+
 @media (min-width: 1024px) {
   .login-left {
     display: flex;
@@ -120,393 +134,7 @@
   height: 500px;
 }
 
-.illus-scene {
-  position: relative;
-  width: 550px;
-  height: 400px;
-  transition: filter 0.6s ease;
-}
-
-.illus-scene--cautious {
-  filter: brightness(0.96);
-}
-
-.illus-scene--excited {
-  filter: brightness(1.06);
-}
-
-/* ================================================================
-   🟠 ORANGE CIRCLE — Smiling face with blink
-   ================================================================ */
-
-.illus-orange {
-  position: absolute;
-  left: 0;
-  width: 240px;
-  height: 200px;
-  background-color: #FF9B6B;
-  border-radius: 120px 120px 0 0;
-  z-index: 3;
-  bottom: 0;
-  transform-origin: bottom center;
-}
-
-/* Face container */
-.illus-orange-face {
-  position: absolute;
-  left: 0;
-  top: 40px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Eyes */
-.illus-orange-eyes {
-  display: flex;
-  gap: 3.2rem;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-/* Squint / blink */
-.illus-orange-eyes--squint .illus-orange-eye {
-  transform: scaleY(0.3);
-  border-radius: 4px;
-}
-
-.illus-orange-eye {
-  width: 16px;
-  height: 16px;
-  background-color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.illus-orange-pupil {
-  width: 6px;
-  height: 6px;
-  background-color: #2D2D2D;
-  border-radius: 50%;
-}
-
-/* Mouth — emotion-driven */
-.illus-orange-mouth {
-  width: 3.2rem;
-  height: 1rem;
-  border-bottom: 3px solid #2D2D2D;
-  border-radius: 0 0 999px 999px;
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* idle: normal smile (default rounded bottom border) */
-
-/* curious: bigger smile — wider and more curved */
-.illus-orange-mouth--curious {
-  width: 4rem;
-  height: 1.4rem;
-  border-bottom-width: 4px;
-}
-
-/* cautious: tight / pursed lips — thin straight line */
-.illus-orange-mouth--cautious {
-  width: 1.8rem;
-  height: 2px;
-  border-bottom: 2px solid #2D2D2D;
-  border-radius: 999px;
-}
-
-/* excited: big happy open mouth */
-.illus-orange-mouth--excited {
-  width: 3.8rem;
-  height: 1.8rem;
-  border-bottom: 4px solid #2D2D2D;
-  border-radius: 0 0 999px 999px;
-}
-
-/* Blush dots */
-.illus-orange-blush {
-  position: absolute;
-  left: 60px;
-  top: 76px;
-  display: flex;
-  gap: 6.8rem;
-  pointer-events: none;
-}
-
-.illus-blush-dot {
-  width: 10px;
-  height: 10px;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-}
-
-/* ================================================================
-   🟣 PURPLE RECTANGLE — Head tilt & micro-movements
-   ================================================================ */
-
-.illus-purple {
-  position: absolute;
-  left: 70px;
-  width: 180px;
-  height: 400px;
-  background-color: #6C3FF5;
-  border-radius: 10px 10px 0 0;
-  z-index: 1;
-  bottom: 0;
-  transform-origin: bottom center;
-}
-
-.illus-purple-accent {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
-}
-
-/* ================================================================
-   ⚫ BLACK RECTANGLE — Gaze follower (eye tracking)
-   ================================================================ */
-
-.illus-dark {
-  position: absolute;
-  left: 240px;
-  width: 120px;
-  height: 310px;
-  background-color: #2D2D2D;
-  border-radius: 8px 8px 0 0;
-  z-index: 2;
-  bottom: 0;
-  transform-origin: bottom center;
-}
-
-/* ================================================================
-   🟡 YELLOW SHAPE — Body sway + expressive mouth
-   ================================================================ */
-
-.illus-yellow {
-  position: absolute;
-  left: 310px;
-  width: 140px;
-  height: 230px;
-  background-color: #E8D754;
-  border-radius: 70px 70px 0 0;
-  z-index: 4;
-  bottom: 0;
-  transform-origin: bottom center;
-  /* idle subtle sway animation */
-  animation: yellowSway 3s ease-in-out infinite;
-}
-
-.illus-yellow--curious {
-  animation-duration: 2s;
-}
-
-.illus-yellow--cautious {
-  animation: yellowSway 0.8s ease-in-out infinite;
-}
-
-.illus-yellow--excited {
-  animation: yellowJump 0.5s ease-in-out 3;
-}
-
-@keyframes yellowSway {
-  0%, 100% { transform: skewX(0deg); }
-  25% { transform: skewX(2deg); }
-  75% { transform: skewX(-2deg); }
-}
-
-@keyframes yellowJump {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
-/* Yellow dot eyes */
-.illus-yellow-dot-eyes {
-  position: absolute;
-  left: 36px;
-  top: 38px;
-  display: flex;
-  gap: 2.8rem;
-  transition: all 0.3s ease;
-}
-
-.illus-yellow-dot {
-  width: 10px;
-  height: 10px;
-  background-color: #2D2D2D;
-  border-radius: 50%;
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Yellow mouth */
-.illus-yellow-mouth {
-  position: absolute;
-  left: 36px;
-  top: 76px;
-  width: 3.6rem;
-  height: 4px;
-  background-color: #2D2D2D;
-  border-radius: 999px;
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* idle: default smile (a bit curved) */
-
-/* curious: small open 'o' */
-.illus-yellow-mouth--curious {
-  width: 1.6rem;
-  height: 1.2rem;
-  border-radius: 50%;
-  left: 40px;
-  top: 70px;
-}
-
-/* cautious: "shush" tiny horizontal line */
-.illus-yellow-mouth--cautious {
-  width: 1.2rem;
-  height: 3px;
-  left: 44px;
-  top: 78px;
-  border-radius: 999px;
-}
-
-/* excited: big smile */
-.illus-yellow-mouth--excited {
-  width: 3.8rem;
-  height: 1.6rem;
-  border-radius: 0 0 999px 999px;
-  left: 34px;
-  top: 68px;
-  background-color: #2D2D2D;
-}
-
-/* Yellow arms (css-only) */
-.illus-yellow-arms {
-  position: absolute;
-  left: -12px;
-  top: 70px;
-  width: 164px;
-  height: 6px;
-  pointer-events: none;
-}
-
-.illus-yellow-arms::before,
-.illus-yellow-arms::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 20px;
-  height: 6px;
-  background-color: #E8D754;
-  border-radius: 999px;
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.illus-yellow-arms::before {
-  left: 0;
-  transform: rotate(-10deg);
-  transform-origin: right center;
-}
-
-.illus-yellow-arms::after {
-  right: 0;
-  transform: rotate(10deg);
-  transform-origin: left center;
-}
-
-/* Cautious: arms pull in */
-.illus-yellow--cautious .illus-yellow-arms::before {
-  transform: rotate(-5deg);
-}
-
-.illus-yellow--cautious .illus-yellow-arms::after {
-  transform: rotate(5deg);
-}
-
-/* Excited: arms raise up */
-.illus-yellow--excited .illus-yellow-arms::before {
-  transform: rotate(-30deg) translateY(-8px);
-}
-
-.illus-yellow--excited .illus-yellow-arms::after {
-  transform: rotate(30deg) translateY(-8px);
-}
-
-/* ================================================================
-   🟣 + ⚫  Shared eye styles
-   ================================================================ */
-
-.illus-eyes {
-  position: absolute;
-  left: 45px;
-  top: 40px;
-  display: flex;
-  gap: 2rem;
-  transition: all 0.7s ease-in-out;
-}
-
-.illus-eyes-sm {
-  left: 26px;
-  top: 32px;
-  gap: 1.5rem;
-}
-
-.illus-eye {
-  width: 18px;
-  height: 18px;
-  background-color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.illus-eyes-sm .illus-eye {
-  width: 16px;
-  height: 16px;
-}
-
-/* Squint */
-.illus-eyes--squint .illus-eye {
-  transform: scaleY(0.35);
-  border-radius: 4px;
-}
-
-/* Wide eyes */
-.illus-eyes--wide .illus-eye {
-  transform: scale(1.25);
-}
-
-.illus-pupil {
-  width: 7px;
-  height: 7px;
-  background-color: #2D2D2D;
-  border-radius: 50%;
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.illus-eyes-sm .illus-pupil {
-  width: 6px;
-  height: 6px;
-}
-
-/* ================================================================
-   FOOTER
-   ================================================================ */
-
+/* ---------- Footer ---------- */
 .login-left-footer {
   position: relative;
   z-index: 20;
@@ -516,13 +144,22 @@
 }
 
 .login-left-link {
-  color: #9ca3af;
+  color: #4b5563; /* text-gray-600 对齐 careercompass-main */
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .login-left-link:hover {
-  color: #111827;
+  color: #111827; /* text-gray-900 */
+}
+
+/* 暗色模式下左面板为浅色背景，链接使用更深的颜色 */
+[data-theme="dark"] .login-left-link {
+  color: #374151; /* text-gray-700 */
+}
+
+[data-theme="dark"] .login-left-link:hover {
+  color: #000000; /* text-black */
 }
 
 /* ---------- Background decorations ---------- */
@@ -559,6 +196,15 @@
   background: rgba(209, 213, 219, 0.2);
 }
 
+/* 暗色模式模糊圈颜色对齐 careercompass-main: dark:bg-gray-300/30 和 dark:bg-gray-200/20 */
+[data-theme="dark"] .login-left-blur-1 {
+  background: rgba(209, 213, 219, 0.3);
+}
+
+[data-theme="dark"] .login-left-blur-2 {
+  background: rgba(229, 231, 235, 0.2);
+}
+
 /* ================================================================
    RIGHT PANEL
    ================================================================ */
@@ -592,6 +238,13 @@
   object-fit: contain;
 }
 
+/* 移动端 logo 暗色模式背景（对齐 careercompass-main: dark:bg-white dark:p-1 dark:rounded-md） */
+[data-theme="dark"] .login-brand-img-mobile {
+  background-color: #ffffff;
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+}
+
 @media (min-width: 1024px) {
   .login-mobile-logo {
     display: none;
@@ -617,6 +270,11 @@
   margin: 0;
 }
 
+/* careercompass-main 暗色模式 h1 颜色 */
+[data-theme="dark"] .login-heading h1 {
+  color: #fafafa;
+}
+
 /* ---------- Form ---------- */
 .login-form {
   display: flex;
@@ -640,7 +298,7 @@
 .login-field input[type="password"] {
   height: 3rem;
   padding: 0 1rem;
-  border-radius: 9999px;
+  border-radius: 0.5rem; /* rounded-lg 对齐 careercompass-main */
   border: 1px solid var(--border-60);
   background-color: var(--background);
   color: var(--foreground);

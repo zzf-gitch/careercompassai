@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { logActivity } from '../../utils/db'
 import './Profile.css'
 
 /* ── Available avatar colors ── */
 const AVATAR_COLORS = ['#7c5cfc', '#f59e0b', '#3b82f6', '#ec4899', '#10b981', '#f97316']
 
-/* ── Storage keys (must match Login.jsx) ── */
+/* ── Storage keys ── */
 const STORAGE_KEY = 'login_remember_credentials'
-const PROFILE_KEY = 'user_profile'
+const SETTINGS_KEY = 'user_settings'
 
 /* ── Dispatch custom event to notify App.jsx & other components ── */
 function notifyProfileUpdated() {
@@ -15,15 +15,27 @@ function notifyProfileUpdated() {
 }
 
 function Profile() {
-  /* ── Load existing data ── */
-  const savedEmail = localStorage.getItem('userEmail') || ''
-  const savedProfile = (() => {
+  /* ── 从 user_session 读取当前登录邮箱 ── */
+  const sessionEmail = (() => {
     try {
-      const raw = localStorage.getItem(PROFILE_KEY)
+      const raw = localStorage.getItem('user_session')
+      if (raw) {
+        const p = JSON.parse(raw)
+        if (p.email) return p.email
+      }
+    } catch {}
+    return ''
+  })()
+
+  /* ── 从 user_settings 读取个人偏好（不包含密码） ── */
+  const savedSettings = (() => {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY)
       return raw ? JSON.parse(raw) : {}
     } catch { return {} }
   })()
 
+  /* ── 从 remember_credentials 读取已保存的密码 ── */
   const savedCredentials = (() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -36,12 +48,12 @@ function Profile() {
   })()
 
   /* ── State ── */
-  const [displayName, setDisplayName] = useState(savedProfile.displayName || savedEmail.split('@')[0] || '')
-  const [email, setEmail] = useState(savedProfile.email || savedEmail || '')
-  const [password, setPassword] = useState(savedProfile.password || savedCredentials.password || '')
-  const [gender, setGender] = useState(savedProfile.gender || '')
-  const [role, setRole] = useState(savedProfile.role || 'seeker')
-  const [avatarColor, setAvatarColor] = useState(savedProfile.avatarColor || '#7c5cfc')
+  const [displayName, setDisplayName] = useState(savedSettings.displayName || sessionEmail.split('@')[0] || '')
+  const [email, setEmail] = useState(sessionEmail)
+  const [password, setPassword] = useState(savedCredentials.password || '')
+  const [gender, setGender] = useState(savedSettings.gender || '')
+  const [role, setRole] = useState(savedSettings.role || 'seeker')
+  const [avatarColor, setAvatarColor] = useState(savedSettings.avatarColor || '#7c5cfc')
   const [toast, setToast] = useState('')
 
   /* ── Show toast briefly ── */
@@ -56,14 +68,14 @@ function Profile() {
 
     const name = displayName.trim() || email.split('@')[0] || 'User'
 
-    // 1. Save userEmail for App.jsx & feed.jsx
-    localStorage.setItem('userEmail', email)
+    // 1. Save user_session (update email if changed)
+    localStorage.setItem('user_session', JSON.stringify({ email }))
 
-    // 2. Save profile (displayName, email, password, gender, role, avatarColor)
-    const profile = { displayName: name, email, password, gender, role, avatarColor }
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
+    // 2. Save user_settings（个人偏好，不含密码）
+    const settings = { displayName: name, email, gender, role, avatarColor }
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
 
-    // 3. Sync remember-credentials (so Login page auto-fills)
+    // 3. Sync remember-credentials（密码仅保存在这里，不混入个人资料）
     if (password) {
       localStorage.setItem(
         STORAGE_KEY,

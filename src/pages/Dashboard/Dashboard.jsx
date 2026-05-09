@@ -3,12 +3,24 @@ import { useNavigate } from 'react-router-dom'
 import { getDashboardStats, getAllSystemLogs, formatTime } from '../../utils/db'
 import './Dashboard.css'
 
-/* ── Read user profile from localStorage ── */
+/* ── 从 user_session 读取当前登录邮箱 ── */
+function getSessionEmail() {
+  try {
+    const raw = localStorage.getItem('user_session')
+    if (raw) {
+      const p = JSON.parse(raw)
+      if (p.email) return p.email
+    }
+  } catch {}
+  return ''
+}
+
+/* ── Read user settings from localStorage ── */
 function readCurrentUser() {
-  const email = localStorage.getItem('userEmail') || 'user@example.com'
+  const email = getSessionEmail() || 'user@example.com'
   const defaultName = email.split('@')[0]
   try {
-    const raw = localStorage.getItem('user_profile')
+    const raw = localStorage.getItem('user_settings')
     if (raw) {
       const p = JSON.parse(raw)
       return {
@@ -35,7 +47,6 @@ function Dashboard() {
   const [tick, setTick] = useState(0)
   const [stats, setStats] = useState({ submitted: 0, interviews: 0, offers: 0, saved: 0 })
   const [activities, setActivities] = useState([])
-  const [loading, setLoading] = useState(true)
 
   // 监听 profile-updated 事件，用户修改个人资料后刷新
   useEffect(() => {
@@ -63,7 +74,6 @@ function Dashboard() {
           { id: 0, text: '暂无操作记录', time: '', type: 'viewed' },
         ])
       } catch {}
-      setLoading(false)
     })()
   }, [tick])
 
@@ -189,3 +199,4 @@ function Dashboard() {
 }
 
 export default Dashboard
+

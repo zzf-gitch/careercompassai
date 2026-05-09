@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { logActivity } from '../../utils/db'
+import AnimatedCharacters from '../../components/AnimatedCharacters'
 import './Login.css'
 
 const STORAGE_KEY = 'login_remember_credentials'
@@ -8,34 +9,32 @@ const STORAGE_KEY = 'login_remember_credentials'
 function Login() {
   const navigate = useNavigate()
 
+  // 读取当前登录状态（从 user_session 中读取 email）
+  function getLoggedInEmail() {
+    try {
+      const raw = localStorage.getItem('user_session')
+      if (raw) {
+        const p = JSON.parse(raw)
+        if (p.email) return p.email
+      }
+    } catch {}
+    return null
+  }
+
   // 如果已经登录，直接跳转到仪表盘
   useEffect(() => {
-    const email = localStorage.getItem('userEmail')
+    const email = getLoggedInEmail()
     if (email) {
       navigate('/Dashboard', { replace: true })
     }
   }, [navigate])
+
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const sceneRef = useRef(null)
-  const pupilsRef = useRef([])
-  const dotEyesRef = useRef([])
+  const [isTyping, setIsTyping] = useState(false)
   const submitTimerRef = useRef(null)
-  const mouseRef = useRef({ x: 0, y: 0 })
-  const [, forceTick] = useState(0)
-
-  // ---------- Animation state machine ----------
-  const [animState, setAnimState] = useState('idle')
-
-  const triggerExcited = useCallback(() => {
-    setAnimState('excited')
-    if (submitTimerRef.current) clearTimeout(submitTimerRef.current)
-    submitTimerRef.current = setTimeout(() => {
-      setAnimState('idle')
-    }, 1500)
-  }, [])
 
   // 页面加载时从 localStorage 恢复已保存的凭据
   useEffect(() => {
@@ -66,10 +65,9 @@ function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault()
-    triggerExcited()
 
-    // 保存当前登录邮箱供 App / feed 等页面使用
-    localStorage.setItem('userEmail', email)
+    // 保存登录会话到独立的 user_session key（仅含 email，不含密码）
+    localStorage.setItem('user_session', JSON.stringify({ email }))
 
     if (remember) {
       // 保存邮箱和密码到 localStorage（用于下次自动填充）
@@ -86,144 +84,13 @@ function Login() {
     setTimeout(() => navigate('/Dashboard'), 700)
   }
 
-  // ---------- Mouse tracking ----------
-  useEffect(() => {
-    const scene = sceneRef.current
-    if (!scene) return
-
-    const handleMouseMove = (e) => {
-      const rect = scene.getBoundingClientRect()
-      const cx = rect.left + rect.width / 2
-      const cy = rect.top + rect.height / 2
-      const rawDx = (e.clientX - cx) / (rect.width / 2)
-      const rawDy = (e.clientY - cy) / (rect.height / 2)
-      const dx = Math.max(-1, Math.min(1, rawDx))
-      const dy = Math.max(-1, Math.min(1, rawDy))
-      const dist = Math.sqrt(dx * dx + dy * dy)
-      const clamp = dist > 1 ? 1 / dist : 1
-      const maxTravel = 4
-      mouseRef.current = { x: dx * clamp * maxTravel, y: dy * clamp * maxTravel }
-      forceTick((n) => n + 1)
-    }
-
-    const handleMouseLeave = () => {
-      mouseRef.current = { x: 0, y: 0 }
-      forceTick((n) => n + 1)
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseleave', handleMouseLeave)
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseleave', handleMouseLeave)
-    }
-  }, [])
-
-  // ===================================================================
-  //  CHARACTER TRANSFORM MAPS
-  // ===================================================================
-
-  // 🟠 橙色圆形 — 微笑脸，有眨眼动画
-  // idle: 正常微笑 | curious(email聚焦): 微笑变大 | cautious: 微笑收紧 | excited: 点头
-  const orangeTransform = {
-    idle:     'skewX(0deg) skewY(0deg)',
-    curious:  'skewX(0deg) skewY(0deg) scale(1.04)',
-    cautious: 'skewX(0deg) skewY(0deg) scale(0.97)',
-    excited:  'skewX(0deg) skewY(0deg) translateY(-8px)',
-  }
-
-  // 🟣 紫色矩形 — 头部微动
-  // idle: 直立 | curious(email输入): 轻微右倾 | cautious: 轻微倾斜 | excited: 轻微跳跃
-  const purpleTransform = {
-    idle:     'skewX(0deg) skewY(0deg)',
-    curious:  'skewX(8deg) skewY(0deg)',
-    cautious: 'skewX(4deg) skewY(2deg)',
-    excited:  'skewX(0deg) skewY(0deg) translateY(-10px) scale(1.04)',
-  }
-
-  // ⚫ 黑色矩形 — 眼神跟随输入（瞳孔本就有鼠标跟踪，密码聚焦时强指向右下）
-  // idle: 正常 | curious: 微微右看 | cautious: 强指向密码框右下 | excited: 睁大
-  const darkTransform = {
-    idle:     'skewX(0deg) skewY(0deg)',
-    curious:  'skewX(0deg) skewY(0deg)',
-    cautious: 'skewX(0deg) skewY(0deg)',
-    excited:  'skewX(0deg) skewY(0deg) translateY(-6px) scale(1.03)',
-  }
-
-  // 🟡 黄色形状 — 肢体摆动 + 嘴巴表情
-  // idle: 轻微摆动 | curious: 嘴巴微张 | cautious(密码输入): "嘘"小横线 | excited: 雀跃
-  const yellowTransform = {
-    idle:     'skewX(0deg) skewY(0deg)',
-    curious:  'skewX(0deg) skewY(0deg) scale(1.02)',
-    cautious: 'skewX(0deg) skewY(0deg)',
-    excited:  'skewX(0deg) skewY(0deg) translateY(-10px)',
-  }
-
-  // ===================================================================
-  //  PUPIL OFFSET — 所有角色的瞳孔偏移
-  // ===================================================================
-  // 橙色瞳孔（新加的，用于橙色眼睛）
-  const orangePupilOffset = {
-    idle:     { x: 0, y: 0 },
-    curious:  { x: 5, y: -1 },
-    cautious: { x: 2, y: 3 },
-    excited:  { x: 0, y: -3 },
-  }
-  // 紫色瞳孔
-  const purplePupilOffset = {
-    idle:     { x: 0, y: 0 },
-    curious:  { x: 4, y: -1 },
-    cautious: { x: 2, y: 2 },
-    excited:  { x: 0, y: -3 },
-  }
-  // 黑色瞳孔（密码聚焦时强指向右下）
-  const blackPupilOffset = {
-    idle:     { x: 0, y: 0 },
-    curious:  { x: 3, y: 0 },
-    cautious: { x: 6, y: 6 },
-    excited:  { x: 0, y: -4 },
-  }
-  // 黄色小瞳孔（当作眼神点）
-  const yellowPupilOffset = {
-    idle:     { x: 0, y: 0 },
-    curious:  { x: 4, y: -1 },
-    cautious: { x: 1, y: 1 },
-    excited:  { x: 0, y: -3 },
-  }
-
-  const pupilScaleMap = {
-    idle:     1,
-    curious:  1.1,
-    cautious: 0.85,
-    excited:  1.3,
-  }
-  const pupilScale = pupilScaleMap[animState]
-
-  // 合成瞳孔偏移 = 角色特定焦点偏移 + 鼠标追踪偏移
-  const combine = (base) => ({
-    x: base[animState].x + mouseRef.current.x,
-    y: base[animState].y + mouseRef.current.y,
-  })
-
-  const orangePupil = combine(orangePupilOffset)
-  const purplePupil = combine(purplePupilOffset)
-  const blackPupil = combine(blackPupilOffset)
-  const yellowPupil = combine(yellowPupilOffset)
-
-  const dotTransform = `translate(${mouseRef.current.x}px, ${mouseRef.current.y}px)`
-
-  // ===================================================================
-  //  HANDLERS
-  // ===================================================================
-  const handleFocus = (field) => {
-    setAnimState(field === 'email' ? 'curious' : 'cautious')
+  const handleFocus = () => {
+    setIsTyping(true)
   }
 
   const handleBlur = () => {
-    setAnimState('idle')
+    setIsTyping(false)
   }
-
-  const T = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
 
   return (
     <div className="login-page">
@@ -237,146 +104,11 @@ function Login() {
         </div>
 
         <div className="login-illustration">
-          <div className={`illus-scene illus-scene--${animState}`} ref={sceneRef}>
-
-            {/* ============================== */}
-            {/* 🟠 橙色圆形 — 微笑脸，有眨眼动画 */}
-            {/* ============================== */}
-            <div
-              className="illus-orange"
-              style={{ transform: orangeTransform[animState], transition: T }}
-            >
-              {/* 橙色笑脸的眼睛 */}
-              <div className="illus-orange-face">
-                <div className={`illus-orange-eyes ${animState === 'cautious' ? 'illus-orange-eyes--squint' : ''}`}>
-                  <div className="illus-orange-eye">
-                    <div
-                      className="illus-orange-pupil"
-                      ref={(el) => { dotEyesRef.current[0] = el }}
-                      style={{
-                        transform: `translate(${orangePupil.x}px, ${orangePupil.y}px) scale(${pupilScale})`,
-                        transition: T,
-                      }}
-                    />
-                  </div>
-                  <div className="illus-orange-eye">
-                    <div
-                      className="illus-orange-pupil"
-                      ref={(el) => { dotEyesRef.current[1] = el }}
-                      style={{
-                        transform: `translate(${orangePupil.x}px, ${orangePupil.y}px) scale(${pupilScale})`,
-                        transition: T,
-                      }}
-                    />
-                  </div>
-                </div>
-                {/* 橙色嘴巴 — idle=微笑 curious=大笑 cautious=抿嘴 excited=开心大张嘴 */}
-                <div className={`illus-orange-mouth illus-orange-mouth--${animState}`} />
-              </div>
-              {/* 橙色腮红点（保留原 dots 但改为 blush 风格） */}
-              <div className="illus-orange-blush">
-                <div className="illus-blush-dot" style={{ transform: dotTransform, transition: T }} />
-                <div className="illus-blush-dot" style={{ transform: dotTransform, transition: T }} />
-              </div>
-            </div>
-
-            {/* ============================== */}
-            {/* 🟣 紫色矩形 — 头部微动效果 */}
-            {/* ============================== */}
-            <div
-              className="illus-purple"
-              style={{ transform: purpleTransform[animState], transition: T }}
-            >
-              <div className={`illus-eyes ${animState === 'excited' ? 'illus-eyes--wide' : ''}`}>
-                <div className="illus-eye">
-                  <div
-                    className="illus-pupil"
-                    ref={(el) => { pupilsRef.current[0] = el }}
-                    style={{
-                      transform: `translate(${purplePupil.x}px, ${purplePupil.y}px) scale(${pupilScale})`,
-                      transition: T,
-                    }}
-                  />
-                </div>
-                <div className="illus-eye">
-                  <div
-                    className="illus-pupil"
-                    ref={(el) => { pupilsRef.current[1] = el }}
-                    style={{
-                      transform: `translate(${purplePupil.x}px, ${purplePupil.y}px) scale(${pupilScale})`,
-                      transition: T,
-                    }}
-                  />
-                </div>
-              </div>
-              {/* 紫色头部微动装饰线 */}
-              <div className="illus-purple-accent" />
-            </div>
-
-            {/* ============================== */}
-            {/* ⚫ 黑色矩形 — 眼神跟随输入 */}
-            {/* ============================== */}
-            <div
-              className="illus-dark"
-              style={{ transform: darkTransform[animState], transition: T }}
-            >
-              <div className={`illus-eyes illus-eyes-sm ${animState === 'cautious' ? 'illus-eyes--squint' : ''} ${animState === 'excited' ? 'illus-eyes--wide' : ''}`}>
-                <div className="illus-eye">
-                  <div
-                    className="illus-pupil"
-                    ref={(el) => { pupilsRef.current[2] = el }}
-                    style={{
-                      transform: `translate(${blackPupil.x}px, ${blackPupil.y}px) scale(${pupilScale})`,
-                      transition: T,
-                    }}
-                  />
-                </div>
-                <div className="illus-eye">
-                  <div
-                    className="illus-pupil"
-                    ref={(el) => { pupilsRef.current[3] = el }}
-                    style={{
-                      transform: `translate(${blackPupil.x}px, ${blackPupil.y}px) scale(${pupilScale})`,
-                      transition: T,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* ============================== */}
-            {/* 🟡 黄色形状 — 肢体摆动 + 嘴巴表情 */}
-            {/* ============================== */}
-            <div
-              className={`illus-yellow illus-yellow--${animState}`}
-              style={{ transform: yellowTransform[animState], transition: T }}
-            >
-              {/* 黄色的小眼睛（点状） */}
-              <div className="illus-yellow-dot-eyes">
-                <div
-                  className="illus-yellow-dot"
-                  ref={(el) => { dotEyesRef.current[2] = el }}
-                  style={{
-                    transform: `translate(${yellowPupil.x}px, ${yellowPupil.y}px) scale(${pupilScale})`,
-                    transition: T,
-                  }}
-                />
-                <div
-                  className="illus-yellow-dot"
-                  ref={(el) => { dotEyesRef.current[3] = el }}
-                  style={{
-                    transform: `translate(${yellowPupil.x}px, ${yellowPupil.y}px) scale(${pupilScale})`,
-                    transition: T,
-                  }}
-                />
-              </div>
-              {/* 黄色嘴巴 — idle=微笑 cautious=嘘小横线 curious=微张 excited=大笑 */}
-              <div className={`illus-yellow-mouth illus-yellow-mouth--${animState}`} />
-              {/* 黄色手臂（通过伪元素实现摆动） */}
-              <div className="illus-yellow-arms" />
-            </div>
-
-          </div>
+          <AnimatedCharacters
+            isTyping={isTyping}
+            showPassword={showPassword}
+            passwordLength={password.length}
+          />
         </div>
 
         <div className="login-left-footer">
@@ -411,7 +143,7 @@ function Login() {
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => handleFocus('email')}
+                onFocus={handleFocus}
                 onBlur={handleBlur}
               />
             </div>
@@ -421,11 +153,11 @@ function Login() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
-                  placeholder="????????"
+                  placeholder="••••••••"
                   name="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => handleFocus('password')}
+                  onFocus={handleFocus}
                   onBlur={handleBlur}
                 />
                 <button
