@@ -583,6 +583,11 @@
     display: block;
   }
 
+  /* 为页面底部留出空间，避免浮动菜单按钮遮挡底部操作按钮 */
+  .main-content {
+    padding-bottom: 70px;
+  }
+
   /* 侧栏改为浮动式抽屉 */
   .sidebar {
     position: fixed;

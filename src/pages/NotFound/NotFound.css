@@ -1,4 +1,4 @@
-#center {
+.notfound-page {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -7,19 +7,19 @@
   text-align: center;
 }
 
-h1 {
+.notfound-page h1 {
   font-size: 6rem;
   margin-bottom: 0;
   color: #646cff;
 }
 
-p {
+.notfound-page p {
   color: #888;
   font-size: 1.2rem;
   margin-bottom: 2rem;
 }
 
-.back-home {
+.notfound-back-home {
   color: #646cff;
   text-decoration: none;
   font-weight: 500;
@@ -29,53 +29,53 @@ p {
   transition: background-color 0.25s, color 0.25s;
 }
 
-.back-home:hover {
+.notfound-back-home:hover {
   background-color: #646cff;
   color: #fff;
 }
 
 /* Dark theme overrides */
-[data-theme="dark"] p {
+[data-theme="dark"] .notfound-page p {
   color: #94a3b8;
 }
 
-[data-theme="dark"] .back-home {
+[data-theme="dark"] .notfound-back-home {
   color: #818cf8;
   border-color: #818cf8;
 }
 
-[data-theme="dark"] .back-home:hover {
+[data-theme="dark"] .notfound-back-home:hover {
   background-color: #818cf8;
   color: #0f0f1a;
 }
 
 /* ════════ Responsive ════════ */
 @media (max-width: 768px) {
-  #center {
+  .notfound-page {
     min-height: 50vh;
     padding: 0 1rem;
   }
 
-  #center h1 {
+  .notfound-page h1 {
     font-size: 4rem;
   }
 
-  #center p {
+  .notfound-page p {
     font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  #center h1 {
+  .notfound-page h1 {
     font-size: 3rem;
   }
 
-  #center p {
+  .notfound-page p {
     font-size: 0.88rem;
     margin-bottom: 1.5rem;
   }
 
-  .back-home {
+  .notfound-back-home {
     font-size: 0.85rem;
     padding: 0.5em 1em;
   }

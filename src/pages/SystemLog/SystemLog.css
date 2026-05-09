@@ -186,4 +186,16 @@
   .syslog-title {
     font-size: 1.1rem;
   }
+
+  .syslog-card {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .syslog-action {
+    font-size: 0.78rem;
+  }
+
+  .syslog-detail {
+    font-size: 0.72rem;
+  }
 }

@@ -225,11 +225,6 @@
   color: #f59e0b;
 }
 
-.opp-card-right {
-  flex-shrink: 0;
-  margin-left: 1rem;
-}
-
 .opp-card-time {
   font-size: 0.75rem;
   color: var(--muted-foreground, var(--muted-text));
