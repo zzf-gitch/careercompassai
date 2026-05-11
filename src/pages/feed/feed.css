@@ -27,21 +27,21 @@
 .feed-title {
   font-size: 26px;
   font-weight: 700;
-  color: #111827;
+  color: var(--foreground, #111827);
   margin: 0 0 4px;
   letter-spacing: -0.3px;
 }
 
 .feed-subtitle {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--muted-foreground, var(--muted-text));
   margin: 0;
 }
 
 /* ── Post Box ── */
 .post-box {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg, var(--background, #ffffff));
+  border: 1px solid var(--border-60, var(--border-color));
   border-radius: 12px;
   padding: 16px 18px;
   margin-bottom: 20px;
@@ -59,18 +59,18 @@
 
 .post-input {
   flex: 1;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-sidebar, #f9fafb);
+  border: 1px solid var(--border-60, var(--border-color));
   border-radius: 24px;
   padding: 10px 16px;
   font-size: 14px;
-  color: #1f2937;
+  color: var(--foreground, #1f2937);
   outline: none;
   transition: border-color 0.2s;
 }
 
 .post-input::placeholder {
-  color: #9ca3af;
+  color: var(--muted-foreground, #9ca3af);
 }
 
 .post-input:focus {
@@ -83,13 +83,13 @@
   justify-content: flex-end;
   gap: 10px;
   padding-top: 4px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--border-60, #f3f4f6);
 }
 
 .post-cancel-btn {
   background: transparent;
-  border: 1px solid #d1d5db;
-  color: #6b7280;
+  border: 1px solid var(--border-60, #d1d5db);
+  color: var(--muted-foreground, #6b7280);
   border-radius: 20px;
   padding: 7px 22px;
   font-size: 14px;
@@ -99,9 +99,9 @@
 }
 
 .post-cancel-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
-  border-color: #9ca3af;
+  background: var(--dropdown-btn-hover-bg, #f3f4f6);
+  color: var(--foreground, #374151);
+  border-color: var(--muted-foreground, #9ca3af);
 }
 
 .post-submit-btn {
@@ -135,8 +135,8 @@
 }
 
 .post-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg, var(--background, #ffffff));
+  border: 1px solid var(--border-60, var(--border-color));
   border-radius: 12px;
   padding: 18px 20px;
   display: flex;
@@ -160,7 +160,7 @@
 .post-card-author {
   font-size: 14px;
   font-weight: 600;
-  color: #111827;
+  color: var(--foreground, #111827);
 }
 
 .post-card-role {
@@ -170,7 +170,7 @@
 
 .post-card-time {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--muted-foreground, #9ca3af);
 }
 
 /* ── Delete button ── */
@@ -178,7 +178,7 @@
   margin-left: auto;
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--muted-foreground, #9ca3af);
   cursor: pointer;
   padding: 6px;
   border-radius: 8px;
@@ -200,7 +200,7 @@
 
 .post-card-body {
   font-size: 15px;
-  color: #374151;
+  color: var(--foreground, #374151);
   line-height: 1.5;
   padding: 2px 0;
   word-break: break-word;
@@ -211,9 +211,9 @@
   display: flex;
   gap: 16px;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--muted-foreground, #9ca3af);
   padding: 2px 0 4px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-60, #f3f4f6);
 }
 
 /* ── Action buttons ── */
@@ -228,7 +228,7 @@
   gap: 6px;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--muted-foreground, #6b7280);
   font-size: 13px;
   padding: 6px 12px;
   border-radius: 8px;
@@ -237,8 +237,8 @@
 }
 
 .post-action-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--dropdown-btn-hover-bg, #f3f4f6);
+  color: var(--foreground, #374151);
 }
 
 .post-action-btn.liked {
@@ -258,8 +258,8 @@
 
 /* ── User Card ── */
 .user-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg, var(--background, #ffffff));
+  border: 1px solid var(--border-60, var(--border-color));
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -283,7 +283,7 @@
 .user-card-name {
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  color: var(--foreground, #111827);
   margin: 0;
 }
 
@@ -308,12 +308,12 @@
 .user-stat-value {
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  color: var(--foreground, #111827);
 }
 
 .user-stat-label {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--muted-foreground, #9ca3af);
 }
 
 .user-card-btn {
@@ -335,8 +335,8 @@
 
 /* ── Trending Card ── */
 .trending-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg, var(--background, #ffffff));
+  border: 1px solid var(--border-60, var(--border-color));
   border-radius: 12px;
   padding: 16px 18px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -345,7 +345,7 @@
 .trending-title {
   font-size: 14px;
   font-weight: 700;
-  color: #111827;
+  color: var(--foreground, #111827);
   margin: 0 0 12px;
 }
 
@@ -354,7 +354,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-60, #f3f4f6);
 }
 
 .trending-item:last-child {
@@ -363,13 +363,13 @@
 
 .trending-tag {
   font-size: 13px;
-  color: #374151;
+  color: var(--foreground, #374151);
   font-weight: 500;
 }
 
 .trending-count {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--muted-foreground, #9ca3af);
 }
 
 /* ============================

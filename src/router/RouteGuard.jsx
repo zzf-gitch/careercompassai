@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Outlet, useMatches } from 'react-router-dom'
 import { setDocumentTitle } from '../hooks/useDocumentTitle'
 import { seedIfEmpty } from '../utils/db'
+import MouseParticles from '../components/MouseParticles'
 
 /**
  * 路由守卫组件
@@ -28,5 +29,10 @@ export default function RouteGuard() {
     seedIfEmpty()
   }, [])
 
-  return <Outlet />
+  return (
+    <>
+      <Outlet />
+      <MouseParticles />
+    </>
+  )
 }

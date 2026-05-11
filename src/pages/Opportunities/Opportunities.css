@@ -626,11 +626,18 @@
     border-top: 1px solid var(--border-60, var(--border-color));
   }
 
+  .opp-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
   .opp-modal {
     max-width: 100%;
-    margin: 0 0.5rem;
+    margin: 0;
     max-height: 85vh;
     overflow-y: auto;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
   }
 
   .opp-modal-grid {

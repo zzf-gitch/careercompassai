@@ -122,6 +122,7 @@ export default function AnimatedCharacters({ isTyping = false, showPassword = fa
   const blackRef = useRef(null)
   const yellowRef = useRef(null)
   const orangeRef = useRef(null)
+  const peekTimerRef = useRef(null)
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -174,21 +175,28 @@ export default function AnimatedCharacters({ isTyping = false, showPassword = fa
     setIsLookingAtEachOther(false)
   }, [isTyping])
 
-  // 密码可见时紫色偷看（对齐原版：依赖 isPurplePeeking 实现循环偷看）
+  // 密码可见时紫色偷看 — 使用 ref 管理定时器避免依赖循环
   useEffect(() => {
     if (passwordLength > 0 && showPassword) {
-      const schedule = () => {
-        const t = setTimeout(() => {
+      const schedulePeek = () => {
+        peekTimerRef.current = setTimeout(() => {
           setIsPurplePeeking(true)
-          setTimeout(() => setIsPurplePeeking(false), 800)
+          peekTimerRef.current = setTimeout(() => {
+            setIsPurplePeeking(false)
+            schedulePeek()
+          }, 800)
         }, Math.random() * 3000 + 2000)
-        return t
       }
-      const t = schedule()
-      return () => clearTimeout(t)
+      schedulePeek()
+      return () => {
+        if (peekTimerRef.current) clearTimeout(peekTimerRef.current)
+      }
     }
     setIsPurplePeeking(false)
-  }, [passwordLength, showPassword, isPurplePeeking])
+    return () => {
+      if (peekTimerRef.current) clearTimeout(peekTimerRef.current)
+    }
+  }, [passwordLength, showPassword])
 
   const calcPos = (ref) => {
     if (!ref.current) return { faceX: 0, faceY: 0, bodySkew: 0 }

@@ -2,6 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { getAll, put, formatTime } from './utils/db'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
+import logo from '@/assets/icon.png'
+import AudioWave, { getStoredVisible, setStoredVisible } from './components/AudioWave'
+import TabBar from './components/TabBar'
+import BackgroundSkin, { getActiveBgUrl } from './components/BackgroundSkin'
 
 const navItems = [
   { label: 'Dashboard', labelCn: '仪表盘', icon: '📊', to: '/Dashboard' },
@@ -13,6 +17,18 @@ const navItems = [
   // 个人资料入口已移至右上角下拉菜单
   // 收件箱入口已移至右上角通知铃铛
 ]
+
+/* ── 所有路由的标签元信息（含非侧边栏路由） ── */
+const routeMeta = {
+  '/Dashboard':   { labelCn: '仪表盘',   icon: '📊' },
+  '/feed':        { labelCn: '社区动态', icon: '💬' },
+  '/opportunities': { labelCn: '机会',   icon: '💼' },
+  '/applications':  { labelCn: '我的申请', icon: '📋' },
+  '/saved':       { labelCn: '收藏',     icon: '🔖' },
+  '/profile':     { labelCn: '个人资料', icon: '👤' },
+  '/inbox':       { labelCn: '收件箱',   icon: '✉️' },
+  '/systemlog':   { labelCn: '系统记录', icon: '📋' },
+}
 
 /* ── 获取当前登录邮箱（从独立的 user_session key 读取） ── */
 function getCurrentEmail() {
@@ -60,6 +76,7 @@ function App() {
   const navigate = useNavigate()
   const location = useLocation()
 
+
   // 如果未登录，重定向到登录页
   useEffect(() => {
     const email = getCurrentEmail()
@@ -67,6 +84,123 @@ function App() {
       navigate('/', { replace: true })
     }
   }, [navigate])
+
+  /* ── 标签页状态 ── */
+  // 标签页拖拽排序
+  const handleTabMove = useCallback((dragId, dropId) => {
+    if (dragId === '/Dashboard') return // 主页标签不可拖动
+    setTabs((prev) => {
+      const dragIdx = prev.findIndex((t) => t.id === dragId)
+      const dropIdx = prev.findIndex((t) => t.id === dropId)
+      if (dragIdx === -1 || dropIdx === -1 || dragIdx === dropIdx) return prev
+      const next = [...prev]
+      const [moved] = next.splice(dragIdx, 1)
+      next.splice(dropIdx, 0, moved)
+      return next
+    })
+  }, [])
+
+  const [tabs, setTabs] = useState(() => {
+    const homeMeta = routeMeta['/Dashboard']
+    return [{ id: '/Dashboard', ...homeMeta, closable: false }]
+  })
+  const [activeTab, setActiveTab] = useState('/Dashboard')
+
+  const activeTabRef = useRef(activeTab)
+  activeTabRef.current = activeTab
+
+  const addTab = useCallback((path) => {
+    const meta = routeMeta[path]
+    if (!meta) return
+    setTabs((prev) => {
+      if (prev.some((t) => t.id === path)) return prev
+      return [...prev, { id: path, ...meta, closable: true }]
+    })
+  }, [])
+
+  const handleTabClick = useCallback((tab) => {
+    setActiveTab(tab.id)
+    navigate(tab.id)
+  }, [navigate])
+
+  const handleTabClose = useCallback((tab) => {
+    const homeMeta = routeMeta['/Dashboard']
+    setTabs((prev) => {
+      const idx = prev.findIndex((t) => t.id === tab.id)
+      const next = prev.filter((t) => t.id !== tab.id)
+      if (activeTabRef.current === tab.id) {
+        const prevTab = idx > 0 ? next[idx - 1] : next.length > 0 ? next[0] : { id: '/Dashboard', ...homeMeta }
+        const targetId = prevTab ? prevTab.id : '/Dashboard'
+        setTimeout(() => {
+          setActiveTab(targetId)
+          navigate(targetId)
+        }, 0)
+      }
+      return next
+    })
+  }, [navigate])
+
+  // 路由变化时同步标签页
+  useEffect(() => {
+    const path = location.pathname
+    const hasMeta = routeMeta[path]
+    if (hasMeta) {
+      setActiveTab(path)
+      addTab(path)
+    }
+  }, [location.pathname, addTab])
+
+  /* ── 右键菜单状态 ── */
+  const [contextMenu, setContextMenu] = useState(null)
+
+  const handleContextMenu = useCallback((e, tab) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setContextMenu({ x: e.clientX, y: e.clientY, tab })
+  }, [])
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null)
+  }, [])
+
+  const handleContextAction = useCallback((action, tab) => {
+    setContextMenu(null)
+    switch (action) {
+      case 'refresh':
+        setRefreshKey((k) => k + 1)
+        setRefreshing(true)
+        setTimeout(() => navigate(tab.id), 0)
+        break
+      case 'close':
+        handleTabClose(tab)
+        break
+      case 'closeOthers': {
+        setTabs((prev) => {
+          const next = prev.filter((t) => t.id === '/Dashboard' || t.id === tab.id)
+          if (activeTabRef.current !== tab.id && activeTabRef.current !== '/Dashboard') {
+            setTimeout(() => {
+              setActiveTab(tab.id)
+              navigate(tab.id)
+            }, 0)
+          }
+          return next
+        })
+        break
+      }
+      case 'closeAll': {
+        const homeMeta = routeMeta['/Dashboard']
+        setTabs([{ id: '/Dashboard', ...homeMeta, closable: false }])
+        if (activeTabRef.current !== '/Dashboard') {
+          setActiveTab('/Dashboard')
+          navigate('/Dashboard')
+        }
+        break
+      }
+      default:
+        break
+    }
+  }, [handleTabClose, navigate])
+
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifMessages, setNotifMessages] = useState([])
@@ -75,13 +209,56 @@ function App() {
   const sidebarRef = useRef(null)
   const [tick, setTick] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  // 刷新动画结束后自动复位
+  useEffect(() => {
+    if (!refreshing) return
+    const t = setTimeout(() => setRefreshing(false), 700)
+    return () => clearTimeout(t)
+  }, [refreshing])
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [bgDrawerOpen, setBgDrawerOpen] = useState(false)
+  const [bgUrl, setBgUrl] = useState(getActiveBgUrl())
+  // 波纹动画启停状态
+  const [waveVisible, setWaveVisible] = useState(getStoredVisible)
+  // 自定义提示弹窗
+  const [toastMsg, setToastMsg] = useState('')
+  const toastTimer = useRef(null)
 
-  // 每次渲染重新读取 localStorage，确保与 Profile 页修改实时同步
+  const showToast = (msg) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    setToastMsg(msg)
+    toastTimer.current = setTimeout(() => setToastMsg(''), 2500)
+  }
+
+  // 点击背景缩略图时立即切换（不等待抽屉关闭）
+  const handleBgSelect = (id) => {
+    if (id) {
+      // 选择背景时，如果当前是深色模式则自动切回浅色
+      setTheme((prev) => {
+        if (prev === 'dark') {
+          localStorage.setItem('theme', 'light')
+          return 'light'
+        }
+        return prev
+      })
+    }
+    setBgUrl(id ? getActiveBgUrl() : '')
+  }
+  // 波纹动画启停
+  const handleWaveToggle = (next) => {
+    setWaveVisible(next)
+    setStoredVisible(next)
+  }
+
+  // 关闭抽屉
+  const handleBgClose = () => {
+    setBgDrawerOpen(false)
+  }
+
   const profile = readUserProfile()
   const { email: userEmail, displayName: userName, avatarColor } = profile
 
-  /* ── 加载通知（仅未读，最多3条） ── */
   const loadNotifs = useCallback(async () => {
     try {
       const msgs = await getAll('messages')
@@ -92,7 +269,6 @@ function App() {
     }
   }, [])
 
-  // 监听 profile-updated 自定义事件，立即刷新数据
   useEffect(() => {
     const handler = () => {
       setTick((n) => n + 1)
@@ -103,10 +279,13 @@ function App() {
     return () => window.removeEventListener('profile-updated', handler)
   }, [loadNotifs])
 
-  /* ── Theme ── */
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
 
   const handleToggleTheme = () => {
+    if (bgUrl) {
+      showToast('有皮肤背景时无法切换主题，请先选择"无背景"')
+      return
+    }
     setTheme((prev) => {
       const next = prev === 'light' ? 'dark' : 'light'
       localStorage.setItem('theme', next)
@@ -119,7 +298,6 @@ function App() {
   }, [theme])
 
   const handleSignOut = () => {
-    // 只清除登录会话（user_settings 个人偏好保留不变）
     localStorage.removeItem('user_session')
     navigate('/', { replace: true })
   }
@@ -128,14 +306,12 @@ function App() {
     setDropdownOpen((prev) => !prev)
   }
 
-  /* ── 点击通知铃铛：先刷新，再切换弹窗 ── */
   const handleNotifToggle = async () => {
     await loadNotifs()
     setDropdownOpen(false)
     setNotifOpen((prev) => !prev)
   }
 
-  /* ── 点击通知项标记为已读 ── */
   const handleNotifClick = async (msg) => {
     if (!msg.unread) return
     await put('messages', { ...msg, unread: false })
@@ -160,18 +336,24 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [handleClickOutside])
 
-  // 每次导航时强制重新读取 profile，使修改后的用户名/头像即时生效
   useEffect(() => {
     setTick((n) => n + 1)
   }, [location])
 
-  // 导航后关闭移动端侧栏
   useEffect(() => {
     setSidebarOpen(false)
   }, [location])
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout${bgUrl ? ' has-bg' : ''}`}>
+      {/* 背景 backdrop — 只有背景图，无蒙层，蒙层效果由内容区半透明实现 */}
+      {bgUrl && (
+        <div
+          className="bg-backdrop"
+          style={{ backgroundImage: `url(${bgUrl})` }}
+        />
+      )}
+
       {/* 移动端菜单按钮 */}
       <button
         className="mobile-menu-btn"
@@ -193,163 +375,192 @@ function App() {
 
       {/* ===== Left Sidebar ===== */}
       <aside className={`sidebar${sidebarOpen ? ' mobile-open' : ''}`} ref={sidebarRef}>
-        {/* Logo / Brand */}
         <div className="sidebar-brand">
-          <img
-            src="https://i.postimg.cc/nLrDYrHW/icon.png"
-            alt="CareerCompass"
-            width="28"
-            height="28"
-          />
+          <img src={logo} alt="CareerCompass" width="28" height="28" />
           <span>职业罗盘</span>
         </div>
-
-        {/* Navigation */}
         <nav className="sidebar-nav">
-          {navItems.map((item) => {
-            return (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                className={({ isActive }) =>
-                  `sidebar-link${isActive ? ' active' : ''}`
-                }
-                end={item.to === '/Dashboard'}
-              >
-                <span className="sidebar-icon">{item.icon}</span>
-                <span className="sidebar-label">{item.labelCn}</span>
-              </NavLink>
-            )
-          })}
+          {navItems.map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              className={({ isActive }) =>
+                `sidebar-link${isActive ? ' active' : ''}`
+              }
+              end={item.to === '/Dashboard'}
+            >
+              <span className="sidebar-icon">{item.icon}</span>
+              <span className="sidebar-label">{item.labelCn}</span>
+            </NavLink>
+          ))}
         </nav>
-
       </aside>
 
       {/* ===== Main Content ===== */}
       <main className="main-content">
-        {/* ===== Top Bar with Back, Refresh, Theme Toggle & User Card ===== */}
-        <div className="topbar">
-          <div className="topbar-left">
-            {/* Back Button */}
-            <button
-              className="topbar-icon-btn"
-              onClick={() => navigate(-1)}
-              title="返回上一页"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5" />
-                <path d="M12 19l-7-7 7-7" />
-              </svg>
-            </button>
-            {/* Refresh Button */}
-            <button
-              className="topbar-icon-btn"
-              onClick={() => setRefreshKey((k) => k + 1)}
-              title="刷新当前页面"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="23 4 23 10 17 10" />
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-              </svg>
-            </button>
-          </div>
-          <div className="topbar-actions">
-            {/* Notification Bell */}
-            <div className="notif-card" ref={notifRef}>
-              <button
-                className="notif-btn"
-                onClick={handleNotifToggle}
-                title="通知"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        {/* ===== Sticky Header（顶边栏 + 标签页栏） ===== */}
+        <div className="sticky-header">
+          {/* ===== Top Bar ===== */}
+          <div className="topbar">
+            <div className="topbar-left">
+              <button className="topbar-icon-btn" onClick={() => navigate(-1)} title="返回上一页">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
                 </svg>
-                {notifMessages.length > 0 && (
-                  <span className="notif-badge">{notifMessages.length}</span>
+              </button>
+              <button className={`topbar-icon-btn${refreshing ? ' refreshing' : ''}`} onClick={() => { setRefreshKey((k) => k + 1); setRefreshing(true) }} title="刷新当前页面">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                </svg>
+              </button>
+            </div>
+            <div className="topbar-actions">
+              {/* Notification Bell */}
+              <div className="notif-card" ref={notifRef}>
+                <button className="notif-btn" onClick={handleNotifToggle} title="通知">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                  {notifMessages.length > 0 && (
+                    <span className="notif-badge">{notifMessages.length}</span>
+                  )}
+                </button>
+                <div className={`notif-dropdown${notifOpen ? ' open' : ''}`}>
+                  <div className="notif-dropdown-header"><span>通知</span></div>
+                  <div className="notif-dropdown-body">
+                    {notifMessages.length === 0 ? (
+                      <div className="notif-empty">暂无新通知</div>
+                    ) : (
+                      notifMessages.map((msg) => (
+                        <div key={msg.id} className="notif-item" onClick={() => handleNotifClick(msg)}>
+                          <div className="notif-item-dot" />
+                          <div className="notif-item-content">
+                            <div className="notif-item-from">{msg.from}</div>
+                            <div className="notif-item-text">{msg.content}</div>
+                            <div className="notif-item-time">{msg._timestamp ? formatTime(msg._timestamp) : msg.time || '刚刚'}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div className="notif-dropdown-footer">
+                    <button className="notif-view-all" onClick={() => { setNotifOpen(false); navigate('/inbox') }}>
+                      查看收件箱 →
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 波纹启停按钮 */}
+              <button
+                className="topbar-icon-btn wave-topbar-btn"
+                onClick={() => handleWaveToggle(!waveVisible)}
+                title={waveVisible ? '隐藏波纹' : '显示波纹'}
+                aria-label={waveVisible ? '隐藏波纹' : '显示波纹'}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {waveVisible ? (
+                    <>
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                      <polyline points="17.5 6.5 17.5 12 17.5 17.5" />
+                      <polyline points="12 8.5 12 12 12 15.5" />
+                      <polyline points="6.5 11 6.5 12 6.5 14" />
+                    </>
+                  ) : (
+                    <>
+                      <polyline points="17.5 6.5 17.5 12 17.5 17.5" />
+                      <polyline points="12 8.5 12 12 12 15.5" />
+                      <polyline points="6.5 11 6.5 12 6.5 14" />
+                    </>
+                  )}
+                </svg>
+              </button>
+
+              {/* Background Skin */}
+              <button className="topbar-icon-btn bg-skin-btn" onClick={() => setBgDrawerOpen(true)} title="背景皮肤">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="m21 15-5-5L5 21" />
+                </svg>
+              </button>
+
+              {/* Theme Toggle */}
+              <button className="theme-toggle-btn" onClick={handleToggleTheme}
+                title={bgUrl ? '有皮肤背景时无法切换主题' : (theme === 'light' ? '切换到深色模式' : '切换到浅色模式')}
+              >
+                {theme === 'light' ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5" />
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                  </svg>
                 )}
               </button>
-              <div className={`notif-dropdown${notifOpen ? ' open' : ''}`}>
-                <div className="notif-dropdown-header">
-                  <span>通知</span>
+
+              {/* User Card */}
+              <div className="topbar-user-card" ref={cardRef}>
+                <div className="topbar-user-trigger" onClick={handleToggle}>
+                  <div className="topbar-user-avatar" style={{ background: avatarColor }}>
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
                 </div>
-                <div className="notif-dropdown-body">
-                  {notifMessages.length === 0 ? (
-                    <div className="notif-empty">暂无新通知</div>
-                  ) : (
-                    notifMessages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className="notif-item"
-                        onClick={() => handleNotifClick(msg)}
-                      >
-                        <div className="notif-item-dot" />
-                        <div className="notif-item-content">
-                          <div className="notif-item-from">{msg.from}</div>
-                          <div className="notif-item-text">{msg.content}</div>
-                          <div className="notif-item-time">{msg._timestamp ? formatTime(msg._timestamp) : msg.time || '刚刚'}</div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="notif-dropdown-footer">
-                  <button className="notif-view-all" onClick={() => { setNotifOpen(false); navigate('/inbox') }}>
-                    查看收件箱 →
+                <div className={`topbar-user-dropdown${dropdownOpen ? ' open' : ''}`}>
+                  <div className="topbar-user-info">
+                    <div className="topbar-user-avatar-lg" style={{ background: avatarColor }}>
+                      {userName.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="topbar-user-name">{userName}</span>
+                    <span className="topbar-user-email-full">{userEmail}</span>
+                  </div>
+                  <div className="topbar-user-divider" />
+                  <button className="topbar-user-view-btn" onClick={() => { setDropdownOpen(false); navigate('/profile') }}>查看个人资料</button>
+                  <button className="topbar-user-signout" onClick={handleSignOut}>
+                    登出
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
                   </button>
                 </div>
               </div>
             </div>
-
-            {/* Theme Toggle */}
-            <button
-              className="theme-toggle-btn"
-              onClick={handleToggleTheme}
-              title={theme === 'light' ? '切换到深色模式' : '切换到浅色模式'}
-            >
-              {theme === 'light' ? (
-                /* moon icon */
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
-              ) : (
-                /* sun icon */
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="5" />
-                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                </svg>
-              )}
-            </button>
-
-            {/* User Card */}
-            <div className="topbar-user-card" ref={cardRef}>
-              <div className="topbar-user-trigger" onClick={handleToggle}>
-                <div className="topbar-user-avatar" style={{ background: avatarColor }}>
-                  {userName.charAt(0).toUpperCase()}
-                </div>
-              </div>
-              <div className={`topbar-user-dropdown${dropdownOpen ? ' open' : ''}`}>
-                <div className="topbar-user-info">
-                  <div className="topbar-user-avatar-lg" style={{ background: avatarColor }}>
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="topbar-user-name">{userName}</span>
-                  <span className="topbar-user-email-full">{userEmail}</span>
-                </div>
-                <div className="topbar-user-divider" />
-                <button className="topbar-user-view-btn" onClick={() => { setDropdownOpen(false); navigate('/profile') }}>查看个人资料</button>
-                <button className="topbar-user-signout" onClick={handleSignOut}>
-                  登出
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
           </div>
+
+          {/* TabBar — 固定在顶边栏下方 */}
+          <TabBar
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabClick={handleTabClick}
+            onTabClose={handleTabClose}
+            onContextMenu={handleContextMenu}
+            contextMenu={contextMenu}
+            onContextAction={handleContextAction}
+            onCloseContextMenu={closeContextMenu}
+            onTabMove={handleTabMove}
+          />
         </div>
-        <Outlet key={refreshKey} />
+
+        {/* Page Content */}
+        <div className={`page-content${refreshing ? ' refreshing' : ''}`}>
+          <Outlet key={refreshKey} />
+        </div>
+        <AudioWave visible={waveVisible} onToggle={handleWaveToggle} />
+
+        {/* 背景皮肤抽屉 */}
+        <BackgroundSkin open={bgDrawerOpen} onClose={handleBgClose} onBgSelect={handleBgSelect} />
+
+        {/* 自定义提示弹窗 */}
+        {toastMsg && (
+          <div className="bg-toast">
+            <span>{toastMsg}</span>
+          </div>
+        )}
       </main>
     </div>
   )

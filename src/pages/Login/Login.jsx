@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { logActivity } from '../../utils/db'
 import AnimatedCharacters from '../../components/AnimatedCharacters'
+import logo from '@/assets/icon.png'
 import './Login.css'
 
 const STORAGE_KEY = 'login_remember_credentials'
@@ -98,7 +99,7 @@ function Login() {
       <div className="login-left">
         <div className="login-left-logo">
           <Link to="/" className="login-brand">
-            <img alt="CareerCompass logo" loading="lazy" width="32" height="32" decoding="async" className="login-brand-img" src="https://i.postimg.cc/nLrDYrHW/icon.png" />
+            <img alt="CareerCompass logo" loading="lazy" width="32" height="32" decoding="async" className="login-brand-img" src={logo} />
             <span>职业罗盘</span>
           </Link>
         </div>
@@ -124,7 +125,7 @@ function Login() {
       <div className="login-right">
         <div className="login-form-wrapper">
           <div className="login-mobile-logo">
-            <img alt="CareerCompass logo" loading="lazy" width="32" height="32" decoding="async" className="login-brand-img-mobile" src="https://i.postimg.cc/nLrDYrHW/icon.png" />
+            <img alt="CareerCompass logo" loading="lazy" width="32" height="32" decoding="async" className="login-brand-img-mobile" src={logo} />
             <span>职业罗盘</span>
           </div>
           <div className="login-heading">

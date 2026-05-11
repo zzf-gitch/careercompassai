@@ -188,7 +188,7 @@ function Dashboard() {
       <div className="dash-tip-banner">
         <span className="dash-tip-icon">💡</span>
         <span className="dash-tip-text">
-          提示：完善你的个人资料和简历，能让 recruiter 更了解你 —
+          提示：完善你的个人资料，能让 recruiter 更了解你 —
           <button className="dash-tip-link" onClick={() => navigate('/profile')}>
             去完善
           </button>

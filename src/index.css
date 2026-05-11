@@ -4,6 +4,7 @@
 :root {
   /* ── Light (default) ── */
   --bg-body: #ffffff;
+  --bg-content: #ffffff;
   --text-body: #1f2937;
   --bg-sidebar: #f3f4f6;
   --border-color: #e5e7eb;
@@ -35,6 +36,7 @@
 
 [data-theme="dark"] {
   --bg-body: #0f0f1a;
+  --bg-content: #0f0f1a;
   --text-body: #f1f5f9;
   --bg-sidebar: #1a1a2e;
   --border-color: #2d2d44;
