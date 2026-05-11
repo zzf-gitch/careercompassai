@@ -93,9 +93,12 @@ function App() {
       const dragIdx = prev.findIndex((t) => t.id === dragId)
       const dropIdx = prev.findIndex((t) => t.id === dropId)
       if (dragIdx === -1 || dropIdx === -1 || dragIdx === dropIdx) return prev
+      // 不允许其他标签页移动到 Dashboard 前面（Dashboard 必须是索引 0）
+      if (dropIdx === 0) return prev
       const next = [...prev]
       const [moved] = next.splice(dragIdx, 1)
-      next.splice(dropIdx, 0, moved)
+      // 删除 dragIdx 后，若 dropIdx > dragIdx 则目标位置左移一位
+      next.splice(dropIdx > dragIdx ? dropIdx - 1 : dropIdx, 0, moved)
       return next
     })
   }, [])

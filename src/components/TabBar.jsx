@@ -71,8 +71,8 @@ export default function TabBar({
     const items = scrollRef.current?.querySelectorAll('.tab-item')
     items?.forEach((el) => el.classList.remove('drag-over'))
 
-    // 给当前悬停项加上标记
-    if (tab.closable || tab.id === '/Dashboard') {
+    // 只有可关闭的标签页才显示拖拽放置指示器（Dashboard 固定首位不可被覆盖）
+    if (tab.closable) {
       e.currentTarget.classList.add('drag-over')
     }
   }
@@ -85,7 +85,8 @@ export default function TabBar({
     e.preventDefault()
     e.currentTarget.classList.remove('drag-over')
     const dragId = dragRef.current
-    if (!dragId || dragId === dropTab.id) return
+    // 不允许拖拽到 Dashboard 上（Dashboard 固定首位）
+    if (!dragId || dragId === dropTab.id || dropTab.id === '/Dashboard') return
     if (typeof onTabMove === 'function') {
       onTabMove(dragId, dropTab.id)
     }
