@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 /* ── 内置背景图片 ── */
 import bg1 from '@/assets/background-1.png'
@@ -38,6 +38,14 @@ function getUrlById(id) {
 export default function BackgroundSkin({ open, onClose, onBgSelect }) {
   const fileRef = useRef(null)
   // 无操作，仅用来触发隐藏 file input
+  const [activeBg, setActiveBg] = useState(getActiveBg)
+
+  /* ── 打开抽屉时同步最新的选中状态 ── */
+  useEffect(() => {
+    if (open) {
+      setActiveBg(getActiveBg())
+    }
+  }, [open])
 
   /* ── 点击外部关闭抽屉 ── */
   useEffect(() => {
@@ -54,6 +62,7 @@ export default function BackgroundSkin({ open, onClose, onBgSelect }) {
   /* ── 选中背景 ── */
   const handleSelect = (id) => {
     localStorage.setItem(ACTIVE_BG_KEY, id)
+    setActiveBg(id)
     if (onBgSelect) onBgSelect(id)
   }
 
@@ -79,7 +88,7 @@ export default function BackgroundSkin({ open, onClose, onBgSelect }) {
             {BUILTIN_BGS.map((bg) => (
               <div
                 key={bg.id}
-                className="bg-skin-item"
+                className={`bg-skin-item${bg.id === activeBg ? ' active' : ''}`}
                 onClick={() => handleSelect(bg.id)}
               >
                 <div
