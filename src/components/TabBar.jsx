@@ -10,6 +10,10 @@ export default function TabBar({
   onContextAction,
   onCloseContextMenu,
   onTabMove,
+  onFullscreenContent,
+  onFullscreenThemeArea,
+  isThemeAreaFullscreen,
+  isContentFullscreen,
 }) {
   const scrollRef = useRef(null)
   const menuRef = useRef(null)
@@ -45,7 +49,7 @@ export default function TabBar({
   // 拖拽事件处理
   const handleDragStart = (e, tab) => {
     if (!tab.closable) {
-      e.preventDefault() // 主页标签不可拖动
+      e.preventDefault() // 主页标签（Dashboard）不可拖动
       return
     }
     dragRef.current = tab.id
@@ -71,7 +75,7 @@ export default function TabBar({
     const items = scrollRef.current?.querySelectorAll('.tab-item')
     items?.forEach((el) => el.classList.remove('drag-over'))
 
-    // 只有可关闭的标签页才显示拖拽放置指示器（Dashboard 固定首位不可被覆盖）
+    // 只对可关闭的标签页显示拖拽放置指示器
     if (tab.closable) {
       e.currentTarget.classList.add('drag-over')
     }
@@ -85,10 +89,14 @@ export default function TabBar({
     e.preventDefault()
     e.currentTarget.classList.remove('drag-over')
     const dragId = dragRef.current
-    // 不允许拖拽到 Dashboard 上（Dashboard 固定首位）
+    // 不允许拖拽到 Dashboard 上
     if (!dragId || dragId === dropTab.id || dropTab.id === '/Dashboard') return
+    // 判断鼠标在目标标签的左侧还是右侧，以决定插入到目标之前还是之后
+    const rect = e.currentTarget.getBoundingClientRect()
+    const offsetX = e.clientX - rect.left
+    const insertAfter = offsetX > rect.width / 2
     if (typeof onTabMove === 'function') {
-      onTabMove(dragId, dropTab.id)
+      onTabMove(dragId, dropTab.id, insertAfter)
     }
     dragRef.current = null
   }
@@ -96,13 +104,16 @@ export default function TabBar({
   return (
     <div className="tabbar-wrap">
       <div className="tabbar-scroll" ref={scrollRef}>
-        {tabs.map((tab) => {
+        {[...tabs].map((tab) => {
           const isActive = tab.id === activeTab
-          const isDraggable = tab.closable // 主页标签不可拖动
+          const isDraggable = tab.closable // 主页标签(Dashboard)不可拖动，固定标签可拖动
+          const classNames = ['tab-item']
+          if (isActive) classNames.push('active')
+          if (tab.pinned) classNames.push('pinned')
           return (
             <div
               key={tab.id}
-              className={`tab-item${isActive ? ' active' : ''}`}
+              className={classNames.join(' ')}
               onClick={() => onTabClick(tab)}
               onContextMenu={(e) => onContextMenu(e, tab)}
               draggable={isDraggable}
@@ -114,7 +125,7 @@ export default function TabBar({
             >
               <span className="tab-icon">{tab.icon}</span>
               <span className="tab-label">{tab.labelCn}</span>
-              {tab.closable ? (
+              {tab.closable && !tab.pinned ? (
                 <button
                   className="tab-close"
                   onClick={(e) => {
@@ -156,14 +167,25 @@ export default function TabBar({
           </button>
           <button
             className="tab-context-item"
+            onClick={() => onContextAction('openInNewWindow', contextMenu.tab)}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+            新窗口中打开
+          </button>
+          <button
+            className="tab-context-item"
             onClick={() => onContextAction('close', contextMenu.tab)}
-            disabled={!contextMenu.tab.closable}
+            disabled={!contextMenu.tab.closable || contextMenu.tab.pinned}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
-            关闭此标签页
+            关闭标签页
           </button>
           <button
             className="tab-context-item"
@@ -178,6 +200,16 @@ export default function TabBar({
           </button>
           <div className="tab-context-divider" />
           <button
+            className="tab-context-item"
+            onClick={() => onContextAction('pinTab', contextMenu.tab)}
+            disabled={!contextMenu.tab.closable}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
+            </svg>
+            {contextMenu.tab.pinned ? '取消固定' : '固定标签页'}
+          </button>
+          <button
             className="tab-context-item tab-context-item-danger"
             onClick={() => onContextAction('closeAll', contextMenu.tab)}
           >
@@ -187,6 +219,38 @@ export default function TabBar({
               <line x1="16" y1="6" x2="16" y2="22" />
             </svg>
             关闭全部标签页
+          </button>
+          <div className="tab-context-divider" />
+          <button
+            className="tab-context-item"
+            onClick={() => {
+              if (typeof onFullscreenThemeArea === 'function') {
+                onFullscreenThemeArea()
+              }
+              onCloseContextMenu()
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+            </svg>
+            {isThemeAreaFullscreen ? '退出全屏主体区域' : '全屏主体区域'}
+          </button>
+          <button
+            className="tab-context-item"
+            onClick={() => {
+              if (typeof onFullscreenContent === 'function') {
+                onFullscreenContent()
+              }
+              onCloseContextMenu()
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            {isContentFullscreen ? '退出全屏内容区域' : '全屏内容区域'}
           </button>
         </div>
       )}

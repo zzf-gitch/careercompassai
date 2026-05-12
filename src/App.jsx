@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getAll, put, formatTime } from './utils/db'
+import FullscreenButton, { ExitContentFullscreen } from './components/FullscreenButton'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
 import logo from '@/assets/icon.png'
@@ -86,27 +87,73 @@ function App() {
   }, [navigate])
 
   /* ── 标签页状态 ── */
-  // 标签页拖拽排序
-  const handleTabMove = useCallback((dragId, dropId) => {
+  // 从 localStorage 加载保存的标签页（包括 pinned 状态）
+  const loadSavedTabs = () => {
+    // 新窗口打开（?newWindow=1）：只保留 Dashboard，后续由路由同步自动添加当前页
+    if (window.location.search.includes('newWindow=1')) {
+      const homeMeta = routeMeta['/Dashboard']
+      return [{ id: '/Dashboard', ...homeMeta, closable: false }]
+    }
+    try {
+      const saved = localStorage.getItem('tabs_state')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // 刷新页面后，只保留 Dashboard + 已固定的标签页，其余关闭
+          const filtered = parsed.filter((t) => t.id === '/Dashboard' || t.pinned)
+          // 确保 Dashboard 始终存在且在首位
+          const hasDashboard = filtered.some((t) => t.id === '/Dashboard')
+          if (!hasDashboard) {
+            const homeMeta = routeMeta['/Dashboard']
+            filtered.unshift({ id: '/Dashboard', ...homeMeta, closable: false })
+          }
+          // 确保 Dashboard 始终在索引 0
+          if (filtered[0]?.id !== '/Dashboard') {
+            const dashIdx = filtered.findIndex((t) => t.id === '/Dashboard')
+            if (dashIdx > 0) {
+              const [dash] = filtered.splice(dashIdx, 1)
+              filtered.unshift(dash)
+            }
+          }
+          return filtered
+        }
+      }
+    } catch {}
+    const homeMeta = routeMeta['/Dashboard']
+    return [{ id: '/Dashboard', ...homeMeta, closable: false }]
+  }
+
+  const [tabs, setTabs] = useState(loadSavedTabs)
+
+  // 标签页变化时保存到 localStorage（新窗口不保存，避免覆盖原窗口的标签状态）
+  useEffect(() => {
+    if (window.location.search.includes('newWindow=1')) return
+    localStorage.setItem('tabs_state', JSON.stringify(tabs))
+  }, [tabs])
+
+  // 标签页拖拽排序（支持插入到目标之前或之后）
+  const handleTabMove = useCallback((dragId, dropId, insertAfter = false) => {
     if (dragId === '/Dashboard') return // 主页标签不可拖动
     setTabs((prev) => {
       const dragIdx = prev.findIndex((t) => t.id === dragId)
       const dropIdx = prev.findIndex((t) => t.id === dropId)
       if (dragIdx === -1 || dropIdx === -1 || dragIdx === dropIdx) return prev
       // 不允许其他标签页移动到 Dashboard 前面（Dashboard 必须是索引 0）
-      if (dropIdx === 0) return prev
+      if (dropIdx === 0 && !insertAfter) return prev
       const next = [...prev]
       const [moved] = next.splice(dragIdx, 1)
-      // 删除 dragIdx 后，若 dropIdx > dragIdx 则目标位置左移一位
-      next.splice(dropIdx > dragIdx ? dropIdx - 1 : dropIdx, 0, moved)
+      // 如果 dragIdx 在 dropIdx 之前，删除 dragIdx 后 dropIdx 会左移一位
+      const adjustedDropIdx = dragIdx < dropIdx ? dropIdx - 1 : dropIdx
+      const targetIdx = insertAfter ? adjustedDropIdx + 1 : adjustedDropIdx
+      // 确保不超出数组边界
+      if (targetIdx < 0 || targetIdx > next.length) {
+        next.splice(next.length, 0, moved)
+      } else {
+        next.splice(targetIdx, 0, moved)
+      }
       return next
     })
   }, [])
-
-  const [tabs, setTabs] = useState(() => {
-    const homeMeta = routeMeta['/Dashboard']
-    return [{ id: '/Dashboard', ...homeMeta, closable: false }]
-  })
   const [activeTab, setActiveTab] = useState('/Dashboard')
 
   const activeTabRef = useRef(activeTab)
@@ -179,7 +226,8 @@ function App() {
         break
       case 'closeOthers': {
         setTabs((prev) => {
-          const next = prev.filter((t) => t.id === '/Dashboard' || t.id === tab.id)
+          // 保留 Dashboard + 固定标签 + 当前右键的标签
+          const next = prev.filter((t) => t.id === '/Dashboard' || t.pinned || t.id === tab.id)
           if (activeTabRef.current !== tab.id && activeTabRef.current !== '/Dashboard') {
             setTimeout(() => {
               setActiveTab(tab.id)
@@ -191,12 +239,39 @@ function App() {
         break
       }
       case 'closeAll': {
+        // 保留 Dashboard + 已固定的标签页
         const homeMeta = routeMeta['/Dashboard']
-        setTabs([{ id: '/Dashboard', ...homeMeta, closable: false }])
+        setTabs((prev) => {
+          const next = prev.filter((t) => t.id === '/Dashboard' || t.pinned)
+          // 确保 Dashboard 存在
+          const hasDashboard = next.some((t) => t.id === '/Dashboard')
+          if (!hasDashboard) {
+            next.unshift({ id: '/Dashboard', ...homeMeta, closable: false })
+          }
+          return next
+        })
         if (activeTabRef.current !== '/Dashboard') {
           setActiveTab('/Dashboard')
           navigate('/Dashboard')
         }
+        break
+      }
+      // ── 新窗口中打开（使用 hash 路由格式，确保路径正确）
+      // 添加 ?newWindow=1 参数，让新窗口只加载 Dashboard + 当前页面，而非读取全部 localStorage
+      case 'openInNewWindow': {
+        const url = window.location.origin + '/?newWindow=1#' + tab.id
+        window.open(url, '_blank')
+        break
+      }
+      // ── 固定/取消固定标签页 ──
+      case 'pinTab': {
+        setTabs((prev) => {
+          const idx = prev.findIndex((t) => t.id === tab.id)
+          if (idx === -1 || tab.id === '/Dashboard') return prev
+          const next = [...prev]
+          next[idx] = { ...next[idx], pinned: !next[idx].pinned }
+          return next
+        })
         break
       }
       default:
@@ -213,6 +288,35 @@ function App() {
   const [tick, setTick] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
+  // 全屏状态
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement)
+  // 主题区域/内容区域全屏状态（用于右键菜单文字切换）
+  const [isThemeAreaFullscreen, setIsThemeAreaFullscreen] = useState(false)
+  const [isContentFullscreen, setIsContentFullscreen] = useState(false)
+
+  // 全屏切换
+  const handleFullscreenToggle = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.()
+      setIsFullscreen(true)
+    } else {
+      document.exitFullscreen?.()
+      setIsFullscreen(false)
+    }
+  }, [])
+
+  // 监听全屏状态变化（同时跟踪是哪个元素在全屏）
+  useEffect(() => {
+    const handler = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+      const fsEl = document.fullscreenElement
+      setIsThemeAreaFullscreen(!!fsEl && fsEl.classList?.contains('theme-area'))
+      setIsContentFullscreen(!!fsEl && fsEl.classList?.contains('page-content'))
+    }
+    document.addEventListener('fullscreenchange', handler)
+    return () => document.removeEventListener('fullscreenchange', handler)
+  }, [])
+
   // 刷新动画结束后自动复位
   useEffect(() => {
     if (!refreshing) return
@@ -302,6 +406,7 @@ function App() {
 
   const handleSignOut = () => {
     localStorage.removeItem('user_session')
+    localStorage.removeItem('tabs_state')
     navigate('/', { replace: true })
   }
 
@@ -401,7 +506,7 @@ function App() {
 
       {/* ===== Main Content ===== */}
       <main className="main-content">
-        {/* ===== Sticky Header（顶边栏 + 标签页栏） ===== */}
+        {/* ===== Sticky Header（顶边栏，始终可见不在全屏区域内） ===== */}
         <div className="sticky-header">
           {/* ===== Top Bar ===== */}
           <div className="topbar">
@@ -417,6 +522,7 @@ function App() {
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                 </svg>
               </button>
+              <FullscreenButton isFullscreen={isFullscreen} onToggle={handleFullscreenToggle} />
             </div>
             <div className="topbar-actions">
               {/* Notification Bell */}
@@ -482,7 +588,7 @@ function App() {
               </button>
 
               {/* Background Skin */}
-              <button className="topbar-icon-btn bg-skin-btn" onClick={() => setBgDrawerOpen(true)} title="背景皮肤">
+              <button className="topbar-icon-btn bg-skin-btn" onClick={() => setBgDrawerOpen(true)} title="皮肤背景">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                   <circle cx="8.5" cy="8.5" r="1.5" />
@@ -534,7 +640,11 @@ function App() {
               </div>
             </div>
           </div>
+        </div>
+        {/* ===== Sticky Header 结束 ===== */}
 
+        {/* ===== 主题区域容器（全屏主体区域时整个区域全屏：TabBar+内容区） ===== */}
+        <div className="theme-area">
           {/* TabBar — 固定在顶边栏下方 */}
           <TabBar
             tabs={tabs}
@@ -546,16 +656,43 @@ function App() {
             onContextAction={handleContextAction}
             onCloseContextMenu={closeContextMenu}
             onTabMove={handleTabMove}
+            isThemeAreaFullscreen={isThemeAreaFullscreen}
+            isContentFullscreen={isContentFullscreen}
+            onFullscreenContent={() => {
+              const el = document.querySelector('.page-content')
+              if (el) {
+                if (!document.fullscreenElement) {
+                  el.requestFullscreen?.()
+                } else {
+                  document.exitFullscreen?.()
+                }
+              }
+            }}
+            onFullscreenThemeArea={() => {
+              const el = document.querySelector('.theme-area')
+              if (el) {
+                if (!document.fullscreenElement) {
+                  el.requestFullscreen?.()
+                } else {
+                  document.exitFullscreen?.()
+                }
+              }
+            }}
           />
-        </div>
 
-        {/* Page Content */}
-        <div className={`page-content${refreshing ? ' refreshing' : ''}`}>
-          <Outlet key={refreshKey} />
+          {/* Page Content */}
+          <div className={`page-content${refreshing ? ' refreshing' : ''}`}>
+            <Outlet key={refreshKey} />
+            {/* 全屏内容区域退出按钮 — 放在 page-content 内部才能在 fullscreen 中显示 */}
+            <ExitContentFullscreen targetSelector=".page-content" />
+          </div>
+          <AudioWave visible={waveVisible} onToggle={handleWaveToggle} />
+          {/* 全屏主体区域退出按钮 — 放在 theme-area 内部才能在 fullscreen 中显示 */}
+          <ExitContentFullscreen targetSelector=".theme-area" />
         </div>
-        <AudioWave visible={waveVisible} onToggle={handleWaveToggle} />
+        {/* ===== theme-area 结束 ===== */}
 
-        {/* 背景皮肤抽屉 */}
+        {/* 皮肤背景抽屉 */}
         <BackgroundSkin open={bgDrawerOpen} onClose={handleBgClose} onBgSelect={handleBgSelect} />
 
         {/* 自定义提示弹窗 */}

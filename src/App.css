@@ -69,10 +69,12 @@
   z-index: 1;
   background: transparent;
 }
-/* 防止 sticky-header 内的 topbar/tabbar-wrap 背景与 sticky-header 双层叠加 */
-.app-layout.has-bg .topbar,
-.app-layout.has-bg .tabbar-wrap {
+/* 有背景皮肤时顶栏半透明以透出背景；tabbar-wrap 保持实色背景避免透出背景图导致过亮 */
+.app-layout.has-bg .topbar {
   background: transparent;
+}
+.app-layout.has-bg .tabbar-wrap {
+  background: var(--bg-body);
 }
 
 /* ── 侧边栏 — 深色半透明，透出背景 ── */
@@ -193,7 +195,7 @@
   box-shadow: 0 0 18px rgba(124, 92, 252, 0.3);
 }
 
-/* ── 背景皮肤按钮 ── */
+/* ── 皮肤背景按钮 ── */
 .app-layout.has-bg .bg-skin-btn {
   color: #ffffff;
 }
@@ -219,7 +221,7 @@
   background: rgba(124, 92, 252, 0.12);
 }
 
-/* ── 背景皮肤抽屉 ── */
+/* ── 皮肤背景抽屉 ── */
 .app-layout.has-bg .bg-skin-drawer {
   background: rgba(8, 8, 22, 0.96);
   border-left-color: rgba(55, 55, 80, 0.5);
@@ -445,6 +447,66 @@
   gap: 6px;
 }
 
+/* ── 主题区域容器（包含顶栏+标签栏+内容区） ── */
+.theme-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── 全屏退出按钮（悬浮右上角） ── */
+.exit-content-fullscreen-btn {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, transform 0.15s;
+  animation: exitFsBtnIn 0.25s ease-out;
+}
+.exit-content-fullscreen-btn:hover {
+  background: rgba(220, 38, 38, 0.8);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+.exit-content-fullscreen-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+@keyframes exitFsBtnIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 全屏按钮 ── */
+.fullscreen-btn {
+  /* 继承 topbar-icon-btn 全部样式 */
+}
+.fullscreen-btn:hover {
+  color: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 0 16px color-mix(in srgb, #10b981 30%, transparent);
+}
+.app-layout.has-bg .fullscreen-btn:hover {
+  color: #34d399;
+  border-color: #34d399;
+  box-shadow: 0 0 18px rgba(52, 211, 153, 0.3);
+}
+
 /* ── Topbar Icon Button ── */
 .topbar-icon-btn {
   display: flex;
@@ -525,6 +587,14 @@
 
 .theme-toggle-btn:active {
   transform: scale(0.9);
+}
+
+/* ── 右键菜单全屏主题区域按钮 ── */
+.tab-context-item-fullscreen {
+  color: #10b981;
+}
+.tab-context-item-fullscreen:hover {
+  background: color-mix(in srgb, #10b981 10%, transparent);
 }
 
 .theme-toggle-btn svg {
@@ -986,7 +1056,7 @@
     display: none;
   }
 
-  /* ── 背景皮肤抽屉移动端适配 ── */
+  /* ── 皮肤背景抽屉移动端适配 ── */
   .bg-skin-drawer {
     width: 100vw;
     border-left: none;
@@ -1051,7 +1121,7 @@
     padding: 3px;
   }
 
-  /* ── 背景皮肤抽屉移动端适配 (小屏) ── */
+  /* ── 皮肤背景抽屉移动端适配 (小屏) ── */
   .bg-skin-header h3 {
     font-size: 15px;
   }
@@ -1308,6 +1378,27 @@
 .tab-item.drag-over {
   background: color-mix(in srgb, var(--primary, #7c5cfc) 12%, transparent);
   border-bottom-color: var(--primary, #7c5cfc);
+}
+
+/* ── 固定标签页样式 ── */
+.tab-item.pinned {
+  position: relative;
+}
+.tab-item.pinned .tab-icon::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary, #7c5cfc);
+}
+.tab-item.pinned .tab-label {
+  font-weight: 500;
+}
+.app-layout.has-bg .tab-item.pinned .tab-icon::after {
+  box-shadow: 0 0 6px rgba(124, 92, 252, 0.6);
 }
 
 .tab-icon {
