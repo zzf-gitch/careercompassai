@@ -88,9 +88,16 @@ function App() {
 
   /* ── 标签页状态 ── */
   // 从 localStorage 加载保存的标签页（包括 pinned 状态）
+  /* ── 判断当前是否为新窗口打开 ── */
+  const isNewWindowRef = useRef(window.location.search.includes('newWindow=1'))
+
+  /** 加载初始标签状态：
+   *  - 新窗口（?newWindow=1）：只保留 Dashboard，路由同步会自动添加当前页
+   *  - 普通刷新：只保留 Dashboard + 已固定的标签页，其余关闭
+   */
   const loadSavedTabs = () => {
-    // 新窗口打开（?newWindow=1）：只保留 Dashboard，后续由路由同步自动添加当前页
-    if (window.location.search.includes('newWindow=1')) {
+    // 新窗口首次打开——只给 Dashboard
+    if (isNewWindowRef.current) {
       const homeMeta = routeMeta['/Dashboard']
       return [{ id: '/Dashboard', ...homeMeta, closable: false }]
     }
@@ -99,9 +106,8 @@ function App() {
       if (saved) {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // 刷新页面后，只保留 Dashboard + 已固定的标签页，其余关闭
+          // 只保留 Dashboard + 已固定的标签页
           const filtered = parsed.filter((t) => t.id === '/Dashboard' || t.pinned)
-          // 确保 Dashboard 始终存在且在首位
           const hasDashboard = filtered.some((t) => t.id === '/Dashboard')
           if (!hasDashboard) {
             const homeMeta = routeMeta['/Dashboard']
@@ -125,9 +131,19 @@ function App() {
 
   const [tabs, setTabs] = useState(loadSavedTabs)
 
-  // 标签页变化时保存到 localStorage（新窗口不保存，避免覆盖原窗口的标签状态）
+  // 新窗口首次挂载完成后，清除 URL 中的 ?newWindow=1 参数并标记为非新窗口，
+  // 这样后续刷新时 loadSavedTabs() 会正常从 localStorage 读取
   useEffect(() => {
-    if (window.location.search.includes('newWindow=1')) return
+    if (isNewWindowRef.current) {
+      const cleanUrl = window.location.pathname + window.location.hash
+      window.history.replaceState(null, '', cleanUrl)
+      isNewWindowRef.current = false
+    }
+  }, [])
+
+  // 标签页变化时保存到 localStorage（新窗口首次挂载阶段不保存，避免覆盖原窗口数据）
+  useEffect(() => {
+    if (isNewWindowRef.current) return
     localStorage.setItem('tabs_state', JSON.stringify(tabs))
   }, [tabs])
 
@@ -259,7 +275,9 @@ function App() {
       // ── 新窗口中打开（使用 hash 路由格式，确保路径正确）
       // 添加 ?newWindow=1 参数，让新窗口只加载 Dashboard + 当前页面，而非读取全部 localStorage
       case 'openInNewWindow': {
-        const url = window.location.origin + '/?newWindow=1#' + tab.id
+        // 使用 location.origin + pathname 兼容 GitHub Pages 子路径部署
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/?$/, '/')
+        const url = baseUrl + '?newWindow=1#' + tab.id
         window.open(url, '_blank')
         break
       }
