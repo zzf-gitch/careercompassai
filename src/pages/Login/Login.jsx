@@ -4,6 +4,8 @@ import { logActivity } from '../../utils/db'
 import AnimatedCharacters from '../../components/AnimatedCharacters'
 import logo from '@/assets/icon.png'
 import './Login.css'
+import notifyIcon from '@/assets/icon.png'
+import notifyImage from '@/assets/background-1.png'
 
 const STORAGE_KEY = 'login_remember_credentials'
 
@@ -79,6 +81,18 @@ function Login() {
     } else {
       // 取消记住则清除已保存的凭据
       localStorage.removeItem(STORAGE_KEY)
+    }
+
+     if (window.Notification && Notification.permission !== "denied") {
+      Notification.requestPermission(function (status) {
+        const notification = new Notification('职业罗盘', {
+          body: '登录成功', //主体信息
+          icon: notifyIcon, // 头像图标
+          image: notifyImage, //预览头像
+          vibrate: true, // 震动
+          requireInteraction: true //是否保持一直有效
+        });
+      });
     }
 
     logActivity('登录系统', `用户 ${email.split('@')[0]} 登录了职业罗盘`)
