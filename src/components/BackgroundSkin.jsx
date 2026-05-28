@@ -4,12 +4,16 @@ import { useState, useRef, useEffect } from 'react'
 import bg1 from '@/assets/background-1.png'
 import bg2 from '@/assets/background-2.png'
 import bg3 from '@/assets/background-3.png'
+import bg4 from '@/assets/background-4.png'
+import bg5 from '@/assets/background-5.png'
 
 const BUILTIN_BGS = [
   { id: 'none',    name: '无背景', url: '' },
   { id: 'builtin-1', name: '青春少女', url: bg1 },
   { id: 'builtin-2', name: '蜘蛛侠', url: bg2 },
   { id: 'builtin-3', name: '名侦探柯南', url: bg3 },
+  { id: 'builtin-4', name: '氛围感', url: bg4 },
+  { id: 'builtin-5', name: '极简风格', url: bg5 },
 ]
 
 /* ── localStorage key ── */

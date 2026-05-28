@@ -5,7 +5,8 @@ import AnimatedCharacters from '../../components/AnimatedCharacters'
 import logo from '@/assets/icon.png'
 import './Login.css'
 import notifyIcon from '@/assets/icon.png'
-import notifyImage from '@/assets/background-1.png'
+import notifyImage from '@/assets/background-4.png'
+import notifyImages from '@/assets/background-5.png'
 
 const STORAGE_KEY = 'login_remember_credentials'
 
@@ -85,10 +86,17 @@ function Login() {
 
      if (window.Notification && Notification.permission !== "denied") {
       Notification.requestPermission(function (status) {
+        // 读取登录通知计数器，交替使用 notifyImage / notifyImages
+        const NOTIFICATION_COUNTER_KEY = 'login_notification_counter'
+        let counter = parseInt(localStorage.getItem(NOTIFICATION_COUNTER_KEY) || '0', 10)
+        const image = counter % 2 === 0 ? notifyImage : notifyImages
+        // 更新计数器（0→1→2→3...循环）
+        localStorage.setItem(NOTIFICATION_COUNTER_KEY, String(counter + 1))
+
         const notification = new Notification('职业罗盘', {
           body: '登录成功', //主体信息
           icon: notifyIcon, // 头像图标
-          image: notifyImage, //预览头像
+          image: image, //预览头像（交替轮换）
           vibrate: true, // 震动
           requireInteraction: true //是否保持一直有效
         });
